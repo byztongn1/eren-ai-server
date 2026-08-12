@@ -1,6 +1,6 @@
 /**
  * Eren AI Masaüstü Uygulaması — AI Sohbet Motoru
- * Grok-2 (xAI), DeepSeek V3 ve OpenAI API Entegratörü
+ * Grok (xAI), DeepSeek V3 ve OpenAI API Entegratörü
  * Status 400 Hata Korumalı & Model Güncelli Mimarisi
  */
 
@@ -197,7 +197,8 @@ ${userCustomPrompt}
     const apiKey = this.apiKeys.grok || process.env.GROK_API_KEY;
     if (!apiKey) throw new Error('Grok API Key eksik');
 
-    const models = ['grok-2-latest', 'grok-2', 'grok-beta'];
+    // xAI Güncel Aktif Grok Modelleri
+    const models = ['grok-latest', 'grok-4.3', 'grok-4.20-non-reasoning', 'grok-4.20', 'grok-4.5'];
     let lastError = null;
 
     for (const modelName of models) {
@@ -221,7 +222,7 @@ ${userCustomPrompt}
       } catch (err) {
         lastError = err;
         if (err.response && err.response.status === 400) {
-          console.log(`Grok (${modelName}) Status 400 aldı, bir sonraki model deneniyor...`);
+          console.log(`Grok (${modelName}) Status 400 aldı, bir sonraki güncel model deneniyor...`);
         } else {
           break;
         }
