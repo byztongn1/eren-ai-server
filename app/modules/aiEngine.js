@@ -162,8 +162,7 @@ ${userCustomPrompt}
         'selam canım nasılsın',
         'selam tatlım nerelisin',
         'selam napıyorsun nerelisin',
-        'selam canım naber naptın',
-        'selam hoşgeldin naptın'
+        'selam canım naber naptın'
       ];
       const randomIndex = Math.floor(Math.random() * naturalGreetingResponses.length);
       return naturalGreetingResponses[randomIndex];
