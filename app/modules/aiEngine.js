@@ -146,12 +146,28 @@ ${userCustomPrompt}
 6. MESAJ UZUNLUĞU: Gerçek mesajlaşma gibi 45 ila 100 karakter arasında insansı yanıtlar ver.
 7. KESİNLİKLE HİÇBİR EMOJİ VEYA BÜYÜK HARF KULLANMA! TÜM YAZI TAMAMEN KÜÇÜK HARFLERDEN OLUŞACAK!
 8. KESİNLİKLE HİÇBİR NOKTALAMA İŞARETİ KULLANMA! (Nokta, virgül, ünlem vb. kesinlikle yasaktır).
-9. İLK SELAMLAŞMA VE DOĞALLIK: Kullanıcı 'selam', 'selam tatlım', 'merhaba' gibi basit bir selamlama yazdığında kesinlikle 'gördüğüme sevindim' gibi yapmacık laflar etme! Sadece samimi ve doğal bir karşılık ver (Örn: 'selam naptın', 'selam canım naber', 'selam hoşgeldin').
+9. İLK SELAMLAŞMA VARIYASYONLARI: Kullanıcı 'selam', 'selam tatlım', 'merhaba', 'sa', 'mrb' gibi bir selamlama yazdığında doğal ve samimi selamlama yap (Örn: 'selam canım nasılsın', 'selam tatlım nerelisin', 'selam napıyorsun nerelisin', 'selam canım naber naptın').
 10. Fotoğraf istendiğinde yanıtının sonuna "[SEND_PHOTO]" etiketini ekle.${fewShotText}`;
   }
 
   async generateResponse(requestedProvider, persona, chatHistory, userMessage) {
     this.loadExamples();
+
+    // Doğal Selamlama Varyasyonları (Natural Greetings Pool)
+    const msgClean = (userMessage || '').toLowerCase().replace(/[.,\/#!?$%'\^&\*;:{}=\-_`~()"'’]/g, "").trim();
+    const basicGreetings = ['selam', 'merhaba', 'selamlar', 'selam tatlim', 'selam tatlım', 'selam canim', 'selam canım', 'sa', 'mrb', 'hey', 'selammm', 'selamm'];
+    
+    if (basicGreetings.includes(msgClean)) {
+      const naturalGreetingResponses = [
+        'selam canım nasılsın',
+        'selam tatlım nerelisin',
+        'selam napıyorsun nerelisin',
+        'selam canım naber naptın',
+        'selam hoşgeldin naptın'
+      ];
+      const randomIndex = Math.floor(Math.random() * naturalGreetingResponses.length);
+      return naturalGreetingResponses[randomIndex];
+    }
 
     const activeProvider = this.selectBestProvider(userMessage);
     const systemPrompt = this.getSystemPrompt(persona, userMessage);
