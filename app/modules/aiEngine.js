@@ -140,7 +140,7 @@ ${userCustomPrompt}
 === GENEL MESAJLAŞMA METODOLOJİSİ ===
 1. KULLANICININ YAZDIĞI KARAKTER PROMPTU VE ÖRNEK DİYALOGLAR HER ŞEYDEN ÖNCELİKLİDİR.
 2. SOHBETİN DEVAMLILIĞI VE KARŞILIKLI İLETİŞİM (ÇOK İLERİ DERECEDE ÖNEMLİ): Kullanıcı sana yaşını, ne yaptığını, nereli olduğunu veya kişisel bir soru sorduğunda (Örn: 'kaç yaşındasın', 'naptın', 'nerelisin'), kendi cevabını verdikten sonra KESİNLİKLE "sen kaç yaşındasın", "sen naptın", "sen nerelisin" gibi KARŞI SORU SORARAK sohbeti canlı tut ve akışı sürdür.
-3. MESAJ UZUNLUĞU: Gerçek mesajlaşma gibi 45 ila 60 karakter arasında insansı yanıtlar ver.
+3. MESAJ UZUNLUĞU: Gerçek mesajlaşma gibi 45 ila 100 karakter arasında insansı yanıtlar ver.
 4. KESİNLİKLE HİÇBİR EMOJİ KULLANMA!
 5. KESİNLİKLE HİÇBİR NOKTALAMA İŞARETİ KULLANMA! (Küçük harflerle, doğal konuşur gibi yaz).
 6. Fotoğraf istendiğinde yanıtının sonuna "[SEND_PHOTO]" etiketini ekle.${fewShotText}`;
@@ -193,7 +193,7 @@ ${userCustomPrompt}
           model: modelName,
           messages: messages,
           temperature: 0.8,
-          max_tokens: 120
+          max_tokens: 180
         }, {
           headers: {
             'Authorization': `Bearer ${apiKey}`,
@@ -226,7 +226,7 @@ ${userCustomPrompt}
       model: 'deepseek-chat',
       messages: messages,
       temperature: 0.8,
-      max_tokens: 120
+      max_tokens: 180
     }, {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -246,7 +246,7 @@ ${userCustomPrompt}
       model: 'gpt-4o',
       messages: messages,
       temperature: 0.8,
-      max_tokens: 120
+      max_tokens: 180
     }, {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -270,10 +270,10 @@ ${userCustomPrompt}
       cleaned = cleaned.replace(/\[send_photo\]/gi, '').trim();
     }
 
-    if (cleaned.length > 60) {
-      cleaned = cleaned.substring(0, 60);
+    if (cleaned.length > 100) {
+      cleaned = cleaned.substring(0, 100);
       const lastSpace = cleaned.lastIndexOf(' ');
-      if (lastSpace > 35) {
+      if (lastSpace > 70) {
         cleaned = cleaned.substring(0, lastSpace);
       }
     }
