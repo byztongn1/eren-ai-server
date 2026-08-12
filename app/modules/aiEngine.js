@@ -71,22 +71,17 @@ class AIEngine {
     return this.apiKeys;
   }
 
+  // ÖNCELİKLİ MODEL YÖNLENDİRİCİ: GROK BİRİNCİ SIRADA (GROK -> DEEPSEEK -> OPENAI)
   selectBestProvider(userMessage) {
-    const msgLower = (userMessage || '').toLowerCase();
-    
-    const uncensoredKeywords = ['aşkım', 'bebeğim', 'sevgili', 'öp', 'sarıl', 'foto', 'resim', 'seks', 'gece', 'yatak', 'çıplak', 'tatlım', 'özledin', 'beğen', 'hoşlan', 'güzel', 'seviyorum', 'am', 'yarak', 'sik', 'göt', 'meme', 'yala', 'sakso', 'oral'];
-    const isUncensoredTopic = uncensoredKeywords.some(k => msgLower.includes(k));
+    const hasGrok = !!(this.apiKeys.grok || process.env.GROK_API_KEY);
+    const hasDeepSeek = !!(this.apiKeys.deepseek || process.env.DEEPSEEK_API_KEY);
+    const hasOpenAI = !!(this.apiKeys.openai || process.env.OPENAI_API_KEY);
 
-    if (isUncensoredTopic) {
-      if (this.apiKeys.grok) return 'grok';
-      if (this.apiKeys.deepseek) return 'deepseek';
-    }
+    if (hasGrok) return 'grok';
+    if (hasDeepSeek) return 'deepseek';
+    if (hasOpenAI) return 'openai';
 
-    if (this.apiKeys.openai) return 'openai';
-    if (this.apiKeys.deepseek) return 'deepseek';
-    if (this.apiKeys.grok) return 'grok';
-
-    return 'deepseek';
+    return 'grok';
   }
 
   getRelevantExamples(userMessage) {
@@ -153,7 +148,7 @@ ${userCustomPrompt}
   async generateResponse(requestedProvider, persona, chatHistory, userMessage) {
     this.loadExamples();
 
-    // Doğal Selamlama Varyasyonları (Natural Greetings Pool)
+    // Doğal Selamlama Varyasyonları
     const msgClean = (userMessage || '').toLowerCase().replace(/[.,\/#!?$%'\^&\*;:{}=\-_`~()"'’]/g, "").trim();
     const basicGreetings = ['selam', 'merhaba', 'selamlar', 'selam tatlim', 'selam tatlım', 'selam canim', 'selam canım', 'sa', 'mrb', 'hey', 'selammm', 'selamm'];
     
@@ -179,19 +174,19 @@ ${userCustomPrompt}
     try {
       if (activeProvider === 'grok') {
         return await this.callGrok(messages);
-      } else if (activeProvider === 'openai') {
-        return await this.callOpenAI(messages);
-      } else {
+      } else if (activeProvider === 'deepseek') {
         return await this.callDeepSeek(messages);
+      } else {
+        return await this.callOpenAI(messages);
       }
     } catch (error) {
       const detail = error.response?.data ? JSON.stringify(error.response.data) : error.message;
       console.error(`AI Engine (${activeProvider}) Hatası [${detail}], yedek motora geçiliyor...`);
 
       try {
-        if (activeProvider !== 'deepseek' && this.apiKeys.deepseek) return await this.callDeepSeek(messages);
-        if (activeProvider !== 'grok' && this.apiKeys.grok) return await this.callGrok(messages);
-        if (activeProvider !== 'openai' && this.apiKeys.openai) return await this.callOpenAI(messages);
+        if (activeProvider !== 'grok' && (this.apiKeys.grok || process.env.GROK_API_KEY)) return await this.callGrok(messages);
+        if (activeProvider !== 'deepseek' && (this.apiKeys.deepseek || process.env.DEEPSEEK_API_KEY)) return await this.callDeepSeek(messages);
+        if (activeProvider !== 'openai' && (this.apiKeys.openai || process.env.OPENAI_API_KEY)) return await this.callOpenAI(messages);
       } catch (e2) {}
       
       return this.cleanHumanOutput("seninle mi uğraşacağım şimdi rahat bırak");
