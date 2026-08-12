@@ -1,10 +1,107 @@
 /**
- * Eren AI Masaüstü Uygulaması — Kullanıcı Arayüzü Mantığı (Renderer)
- * Karakter Profili Silme Özelliği Entegreli
+ * Eren AI Masaüstü & Web Platformu — Kullanıcı Arayüzü Mantığı (Renderer)
+ * Universal Hibrit Mimari: Hem Masaüstü (Electron) hem de Web (Railway/Tarayıcı) Uyumlu!
  */
 
-const { ipcRenderer } = require('electron');
+// -------------------------------------------------------------
+// UNİVERSAL HİBRİT İLETİŞİM MOTORU (ELECTRON IPC vs WEB REST API)
+// -------------------------------------------------------------
+const isElectron = typeof window !== 'undefined' && typeof window.require === 'function';
+const ipcRenderer = isElectron ? window.require('electron').ipcRenderer : null;
 
+async function apiCall(channel, data = null) {
+  if (isElectron && ipcRenderer) {
+    return await ipcRenderer.invoke(channel, data);
+  }
+
+  // Web Browser / Railway URL REST API Eşleştirmesi
+  try {
+    if (channel === 'get-personas') {
+      const res = await fetch('/api/personas');
+      return await res.json();
+    }
+    if (channel === 'add-persona') {
+      const res = await fetch('/api/personas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    }
+    if (channel === 'update-persona-prompt') {
+      const res = await fetch('/api/personas/prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    }
+    if (channel === 'delete-persona') {
+      const res = await fetch('/api/personas/' + data, { method: 'DELETE' });
+      return await res.json();
+    }
+    if (channel === 'get-chat-history') {
+      const res = await fetch(`/api/chat/history?personaId=${data.personaId}&userId=${data.userId}`);
+      return await res.json();
+    }
+    if (channel === 'send-chat-message') {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    }
+    if (channel === 'get-dialogue-examples') {
+      const res = await fetch('/api/dialogues');
+      return await res.json();
+    }
+    if (channel === 'add-dialogue-example') {
+      const res = await fetch('/api/dialogues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    }
+    if (channel === 'bulk-add-dialogue-examples') {
+      const res = await fetch('/api/dialogues/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    }
+    if (channel === 'delete-dialogue-example-by-index') {
+      const res = await fetch('/api/dialogues/' + data, { method: 'DELETE' });
+      return await res.json();
+    }
+    if (channel === 'clear-all-dialogue-examples') {
+      const res = await fetch('/api/dialogues', { method: 'DELETE' });
+      return await res.json();
+    }
+    if (channel === 'get-api-keys') {
+      const res = await fetch('/api/keys');
+      return await res.json();
+    }
+    if (channel === 'save-api-keys') {
+      const res = await fetch('/api/keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    }
+    if (channel === 'get-adb-devices') {
+      return [];
+    }
+  } catch (err) {
+    console.error('Web REST API Hatası:', err);
+    return null;
+  }
+}
+
+// Global State
 let personas = [];
 let activePersona = null;
 let currentUserId = 'user_demo_1';
@@ -92,7 +189,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadPersonas() {
-  personas = await ipcRenderer.invoke('get-personas');
+  personas = await apiCall('get-personas');
   renderPersonasList();
   if (personas && personas.length > 0) {
     if (!activePersona || !personas.find(p => p.id === activePersona.id)) {
@@ -111,9 +208,9 @@ async function loadPersonas() {
 
 async function loadDialogueExamplesCount() {
   try {
-    allDialogueExamples = await ipcRenderer.invoke('get-dialogue-examples');
+    allDialogueExamples = await apiCall('get-dialogue-examples');
     if (dialogueCountBadgeEl) {
-      dialogueCountBadgeEl.innerText = `${allDialogueExamples.length} Örnek Kayıtlı`;
+      dialogueCountBadgeEl.innerText = `${(allDialogueExamples || []).length} Örnek Kayıtlı`;
     }
   } catch (e) {}
 }
@@ -123,13 +220,13 @@ function renderDialogueItemsList(filterQuery = '') {
   dialogueItemsListEl.innerHTML = '';
   const query = filterQuery.toLowerCase().trim();
 
-  const filtered = allDialogueExamples.map((ex, index) => ({ ex, originalIndex: index }))
+  const filtered = (allDialogueExamples || []).map((ex, index) => ({ ex, originalIndex: index }))
     .filter(item => 
       item.ex.user.toLowerCase().includes(query) ||
       item.ex.ai.toLowerCase().includes(query)
     );
 
-  dialogueListTotalCountEl.innerText = `${filtered.length} / ${allDialogueExamples.length} Kayıt`;
+  dialogueListTotalCountEl.innerText = `${filtered.length} / ${(allDialogueExamples || []).length} Kayıt`;
 
   if (filtered.length === 0) {
     dialogueItemsListEl.innerHTML = `<div style="font-size:12px; color:#94a3b8; text-align:center; padding:10px;">Diyalog bulunamadı</div>`;
@@ -153,8 +250,8 @@ function renderDialogueItemsList(filterQuery = '') {
 }
 
 window.deleteDialogueItem = async function(index) {
-  const res = await ipcRenderer.invoke('delete-dialogue-example-by-index', index);
-  if (res.success) {
+  const res = await apiCall('delete-dialogue-example-by-index', index);
+  if (res && res.success) {
     await loadDialogueExamplesCount();
     renderDialogueItemsList(dialogueMgrSearch.value);
   }
@@ -222,7 +319,7 @@ async function setActivePersona(persona) {
   `;
 
   try {
-    const history = await ipcRenderer.invoke('get-chat-history', {
+    const history = await apiCall('get-chat-history', {
       personaId: persona.id,
       userId: currentUserId
     });
@@ -280,7 +377,7 @@ async function handleSendMessage() {
   appendTypingIndicator(typingIndicatorId);
 
   try {
-    const response = await ipcRenderer.invoke('send-chat-message', {
+    const response = await apiCall('send-chat-message', {
       personaId: activePersona.id,
       userId: currentUserId,
       message: text,
@@ -288,7 +385,11 @@ async function handleSendMessage() {
     });
 
     removeTypingIndicator(typingIndicatorId);
-    appendMessage('assistant', response.reply, response.attachedPhoto);
+    if (response && response.reply) {
+      appendMessage('assistant', response.reply, response.attachedPhoto);
+    } else {
+      appendMessage('assistant', 'baglanti hatasi olustu tekrar yaz');
+    }
   } catch (err) {
     removeTypingIndicator(typingIndicatorId);
     appendMessage('assistant', 'baglanti hatasi olustu tekrar yaz');
@@ -326,9 +427,10 @@ function appendMessage(sender, text, mediaPath = null) {
 
   let mediaHtml = '';
   if (mediaPath) {
+    const src = mediaPath.startsWith('http') || mediaPath.startsWith('/data') ? mediaPath : `file://${mediaPath}`;
     mediaHtml = `
       <div class="msg-media">
-        <img src="file://${mediaPath}" alt="Gönderilen Fotoğraf" onclick="window.open('file://${mediaPath}')">
+        <img src="${src}" alt="Gönderilen Fotoğraf" onclick="window.open('${src}')">
       </div>
     `;
   }
@@ -374,10 +476,9 @@ function setupCorporatePillsAndTags() {
 }
 
 // -------------------------------------------------------------
-// MODALLAR VE KARAKTER SİLME ETKİLEŞİMLERİ
+// MODALLAR VE KARAKTER ETKİLEŞİMLERİ
 // -------------------------------------------------------------
 function setupEventListeners() {
-  // Karakter Profilini Sil Butonu
   btnDeleteActivePersona.onclick = async () => {
     if (!activePersona) {
       alert('Silinecek aktif karakter bulunamadı.');
@@ -386,8 +487,8 @@ function setupEventListeners() {
 
     const confirmDelete = confirm(`"${activePersona.name}" isimli karakter profilini ve tüm ayarlarını silmek istediğinizden emin misiniz?`);
     if (confirmDelete) {
-      const res = await ipcRenderer.invoke('delete-persona', activePersona.id);
-      if (res.success) {
+      const res = await apiCall('delete-persona', activePersona.id);
+      if (res && res.success) {
         const deletedName = activePersona.name;
         activePersona = null;
         await loadPersonas();
@@ -411,14 +512,14 @@ function setupEventListeners() {
   };
 
   btnClearAllDialogues.onclick = async () => {
-    if (allDialogueExamples.length === 0) {
+    if ((allDialogueExamples || []).length === 0) {
       alert('Zaten silinecek diyalog kaydı yok.');
       return;
     }
     const confirmDelete = confirm(`Kayıtlı tüm (${allDialogueExamples.length} adet) diyalog örneklerini silmek istediğinizden emin misiniz?`);
     if (confirmDelete) {
-      const res = await ipcRenderer.invoke('clear-all-dialogue-examples');
-      if (res.success) {
+      const res = await apiCall('clear-all-dialogue-examples');
+      if (res && res.success) {
         await loadDialogueExamplesCount();
         renderDialogueItemsList();
         alert('🗑️ Tüm diyalog örnekleri başarıyla silindi ve sıfırlandı.');
@@ -490,7 +591,7 @@ function setupEventListeners() {
     }
 
     try {
-      const res = await ipcRenderer.invoke('bulk-add-dialogue-examples', items);
+      const res = await apiCall('bulk-add-dialogue-examples', items);
       if (res && res.success) {
         bulkDialogueTextarea.value = '';
         await loadDialogueExamplesCount();
@@ -525,8 +626,8 @@ function setupEventListeners() {
       alert('Lütfen hem kullanıcı sorusunu hem de karakter yanıtını giriniz.');
       return;
     }
-    const res = await ipcRenderer.invoke('add-dialogue-example', { user: u, ai: a });
-    if (res.success) {
+    const res = await apiCall('add-dialogue-example', { user: u, ai: a });
+    if (res && res.success) {
       dialogueMgrUser.value = '';
       dialogueMgrAi.value = '';
       await loadDialogueExamplesCount();
@@ -537,11 +638,11 @@ function setupEventListeners() {
   btnSaveInspectorPrompt.onclick = async () => {
     if (!activePersona) return;
     const newPrompt = inspectorPromptEl.value.trim();
-    const res = await ipcRenderer.invoke('update-persona-prompt', {
+    const res = await apiCall('update-persona-prompt', {
       id: activePersona.id,
       systemPrompt: newPrompt
     });
-    if (res.success) {
+    if (res && res.success) {
       activePersona.systemPrompt = newPrompt;
       alert('✅ Karakter promptu başarıyla güncellendi!');
     }
@@ -565,7 +666,7 @@ function setupEventListeners() {
   btnSavePromptModal.onclick = async () => {
     if (!activePersona) return;
     const newPrompt = promptModalText.value.trim();
-    await ipcRenderer.invoke('update-persona-prompt', {
+    await apiCall('update-persona-prompt', {
       id: activePersona.id,
       systemPrompt: newPrompt
     });
@@ -584,9 +685,13 @@ function setupEventListeners() {
   };
 
   btnBrowseFolder.onclick = async () => {
-    const selectedFolder = await ipcRenderer.invoke('select-media-folder');
-    if (selectedFolder) {
-      newFolderPathInput.value = selectedFolder;
+    if (isElectron) {
+      const selectedFolder = await apiCall('select-media-folder');
+      if (selectedFolder) {
+        newFolderPathInput.value = selectedFolder;
+      }
+    } else {
+      alert('Fotoğraf klasörü seçimi masaüstü uygulamasında geçerlidir.');
     }
   };
 
@@ -605,7 +710,7 @@ function setupEventListeners() {
 
     const systemPrompt = activeTraits || 'Samimi, hızlı ve neşeli konuşan arkadaş';
 
-    const newP = await ipcRenderer.invoke('add-persona', {
+    const newP = await apiCall('add-persona', {
       name,
       age: selectedAge,
       gender: selectedGender,
@@ -616,12 +721,12 @@ function setupEventListeners() {
 
     modalAddPersona.classList.remove('open');
     await loadPersonas();
-    await setActivePersona(newP);
+    if (newP) await setActivePersona(newP);
   };
 
   btnOpenApiModal.onclick = async () => {
     try {
-      const keys = await ipcRenderer.invoke('get-api-keys');
+      const keys = await apiCall('get-api-keys');
       if (keys) {
         if (keys.grok) document.getElementById('key-grok').value = keys.grok;
         if (keys.deepseek) document.getElementById('key-deepseek').value = keys.deepseek;
@@ -637,7 +742,7 @@ function setupEventListeners() {
       deepseek: document.getElementById('key-deepseek').value.trim(),
       openai: document.getElementById('key-openai').value.trim()
     };
-    ipcRenderer.invoke('save-api-keys', keys);
+    apiCall('save-api-keys', keys);
     modalApiKeys.classList.remove('open');
     if (chatInputEl) chatInputEl.focus();
   };
@@ -646,10 +751,16 @@ function setupEventListeners() {
 }
 
 async function checkAdbDevices() {
+  if (!isElectron) {
+    adbStatusEl.innerText = 'ADB: Masaüstü Modunda Aktif';
+    adbStatusEl.style.color = '#38bdf8';
+    return;
+  }
+
   adbStatusEl.innerText = 'ADB: Taranıyor...';
   try {
-    const devices = await ipcRenderer.invoke('get-adb-devices');
-    if (devices.length > 0) {
+    const devices = await apiCall('get-adb-devices');
+    if (devices && devices.length > 0) {
       adbStatusEl.innerText = `ADB: ${devices.length} Cihaz Bağlı (${devices[0]})`;
       adbStatusEl.style.color = '#22c55e';
     } else {
