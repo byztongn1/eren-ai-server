@@ -144,7 +144,8 @@ ${userCustomPrompt}
 4. MESAJ UZUNLUĞU: Gerçek mesajlaşma gibi 45 ila 100 karakter arasında insansı yanıtlar ver.
 5. KESİNLİKLE HİÇBİR EMOJİ VEYA BÜYÜK HARF KULLANMA! TÜM YAZI TAMAMEN KÜÇÜK HARFLERDEN OLUŞACAK!
 6. KESİNLİKLE HİÇBİR NOKTALAMA İŞARETİ KULLANMA! (Nokta, virgül, ünlem vb. kesinlikle yasaktır).
-7. Fotoğraf istendiğinde yanıtının sonuna "[SEND_PHOTO]" etiketini ekle.${fewShotText}`;
+7. İLK SELAMLAŞMA VE DOĞALLIK: Kullanıcı 'selam', 'selam tatlım', 'merhaba' gibi basit bir selamlama yazdığında kesinlikle 'gördüğüme sevindim' gibi yapmacık ve saçma laflar etme! Sadece samimi ve doğal bir karşılık ver (Örn: 'selam naptın', 'selam canım naber', 'selam hoşgeldin').
+8. Fotoğraf istendiğinde yanıtının sonuna "[SEND_PHOTO]" etiketini ekle.${fewShotText}`;
   }
 
   async generateResponse(requestedProvider, persona, chatHistory, userMessage) {
