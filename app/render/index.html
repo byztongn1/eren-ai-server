@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eren AI — Otonom Akıllı Sohbet & Persona Yönetim Paneli</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- SOL MENÜ: PERSONA, ARAMA & AYARLAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">🤖</div>
+        <div class="brand-text">
+          <h2>EREN AI</h2>
+          <span>Otonom Akıllı Panel</span>
+        </div>
+      </div>
+
+      <!-- KULLANICI ARAMA BARI -->
+      <div class="search-box">
+        <input type="text" id="input-search-persona" class="search-input" placeholder="🔍 Karakter Ara..." autocomplete="off">
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-title">
+          <span>KARAKTER LİSTESİ</span>
+          <button id="btn-open-add-persona" class="btn-icon" title="Yeni Karakter Ekle">+</button>
+        </div>
+        <div id="personas-list" class="personas-list">
+          <!-- Dinamik Personalar Buraya Yüklenecek -->
+        </div>
+      </div>
+
+      <div class="sidebar-bottom">
+        <button id="btn-open-dialogue-manager" class="btn-secondary" style="border-color:#38bdf8; color:#38bdf8;">💬 Diyalog Örnekleri Bankası</button>
+        <button id="btn-open-prompt-modal" class="btn-secondary" style="border-color:#8b5cf6; color:#c084fc;">📝 Özel Prompt Düzenle</button>
+        <button id="btn-open-api-modal" class="btn-secondary">🔑 API Anahtarları</button>
+        <button id="btn-refresh-adb" class="btn-secondary">📱 ADB Cihazları Tara</button>
+        <div id="adb-status" class="status-badge">ADB: Bağlantı Bekleniyor</div>
+      </div>
+    </aside>
+
+    <!-- ORTA PANEL: CANLI SOHBET SİMÜLATÖRÜ -->
+    <main class="chat-area">
+      <header class="chat-header">
+        <div class="active-persona-info">
+          <div id="active-avatar" class="avatar">S</div>
+          <div>
+            <h3 id="active-persona-name">Selin Yılmaz</h3>
+            <p id="active-persona-subtitle">Otomatik Akıllı Model Yönlendirici (Grok / DeepSeek / OpenAI)</p>
+          </div>
+        </div>
+        <div class="chat-header-actions">
+          <span class="badge-tag">Geçmiş Sohbet: Korunuyor (SQLite)</span>
+        </div>
+      </header>
+
+      <div id="chat-messages" class="chat-messages">
+        <!-- Sohbet Geçmişi Yüklenecek -->
+      </div>
+
+      <div class="chat-input-area">
+        <input type="text" id="input-chat-message" placeholder="Mesajınızı yazın... (Örn: naber foto yollasana)" autocomplete="off">
+        <button id="btn-send-message" class="btn-primary">Gönder</button>
+      </div>
+    </main>
+
+    <!-- SAĞ PANEL: KARAKTER İNCELEME & CANLI PROMPT DÜZENLEME -->
+    <aside class="inspector-panel">
+      <div class="panel-header">KARAKTER DETAYLARI & PROMPT DÜZENLEME</div>
+      
+      <div class="inspector-card">
+        <div class="inspector-field">
+          <label>Karakter İsmi</label>
+          <input type="text" id="inspector-name" readonly>
+        </div>
+        <div class="inspector-field">
+          <label>Yaş & Cinsiyet</label>
+          <input type="text" id="inspector-age-gender" readonly>
+        </div>
+        <div class="inspector-field">
+          <label>Karakter Promptu (İstediğiniz Gibi Düzenleyin)</label>
+          <textarea id="inspector-prompt" rows="5" placeholder="Karakterinizin konuşma üslubunu ve talimatlarını yazın..."></textarea>
+          <button id="btn-save-inspector-prompt" class="btn-primary" style="width:100%; margin-top:8px; font-size:12px;">💾 Prompt'u Kaydet</button>
+        </div>
+        <div class="inspector-field">
+          <label>Özel Medya Klasör Yolu</label>
+          <div class="path-box">
+            <input type="text" id="inspector-folder-path" readonly>
+          </div>
+        </div>
+        <button id="btn-delete-active-persona" class="btn-secondary" style="width:100%; margin-top:14px; color:#ef4444; border-color:rgba(239,68,68,0.4); font-size:12px;">🗑️ Bu Karakter Profilini Sil</button>
+      </div>
+
+      <div class="panel-header">SİSTEM SAĞLIĞI & DESTEK</div>
+      <div class="inspector-card stats-card">
+        <div class="stat-item">
+          <span>Model Yönlendirme</span>
+          <strong class="green-text">Otomatik (Grok/DeepSeek/OpenAI)</strong>
+        </div>
+        <div class="stat-item">
+          <span>Diyalog Örnek Bankası</span>
+          <strong id="dialogue-count-badge" class="green-text">Yükleniyor...</strong>
+        </div>
+        <div class="stat-item">
+          <span>Diyalog Doğallığı</span>
+          <strong class="green-text">%99.9 (DeepSeek V3)</strong>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- YENİ KARAKTER EKLEME MODALI -->
+  <div id="modal-add-persona" class="modal-overlay">
+    <div class="modal-content corporate-modal">
+      <h3>➕ Yeni Karakter (Persona) Ekle</h3>
+      
+      <div class="form-group">
+        <label>Karakter Adı & Soyadı</label>
+        <input type="text" id="new-name" placeholder="Örn: Ayşe Kaya">
+      </div>
+
+      <div class="form-group">
+        <label>Cinsiyet Seçimi</label>
+        <div class="pill-group" id="group-gender">
+          <button type="button" class="btn-pill active" data-value="Kadın">♀ Kadın</button>
+          <button type="button" class="btn-pill" data-value="Erkek">♂ Erkek</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Yaş Grubu</label>
+        <div class="pill-group" id="group-age">
+          <button type="button" class="btn-pill active" data-age="22" data-label="18-22 (Genç)">18-22 Genç</button>
+          <button type="button" class="btn-pill" data-age="26" data-label="23-28 (Orta)">23-28 Orta</button>
+          <button type="button" class="btn-pill" data-age="32" data-label="29-35 (Olgun)">29-35 Olgun</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Kişilik Özellikleri & Tavır (Tıklayarak Seçin)</label>
+        <div class="tag-group" id="group-traits">
+          <span class="tag-pill active" data-trait="⚡ Neşeli">⚡ Neşeli</span>
+          <span class="tag-pill active" data-trait="🤓 Samimi">🤓 Samimi</span>
+          <span class="tag-pill" data-trait="☕ Kahve Sever">☕ Kahve Sever</span>
+          <span class="tag-pill" data-trait="💼 Kurumsal">💼 Kurumsal</span>
+          <span class="tag-pill" data-trait="⚽ Sporcu">⚽ Sporcu</span>
+          <span class="tag-pill" data-trait="🎨 Sanatçı">🎨 Sanatçı</span>
+          <span class="tag-pill" data-trait="💻 Yazılımcı">💻 Yazılımcı</span>
+          <span class="tag-pill" data-trait="✈️ Gezgin">✈️ Gezgin</span>
+          <span class="tag-pill" data-trait="🎶 Müzik Tutkunu">🎶 Müzik Tutkunu</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Özel Medya Fotoğraf Klasörü</label>
+        <div class="input-with-button">
+          <input type="text" id="new-folder-path" placeholder="Klasör seçilmedi...">
+          <button id="btn-browse-folder" class="btn-secondary">Gözat</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-cancel-add" class="btn-secondary">İptal</button>
+        <button id="btn-save-persona" class="btn-primary">Karakteri Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DİYALOG ÖRNEKLERİ BANKASI YÖNETİCİSİ MODALI -->
+  <div id="modal-dialogue-manager" class="modal-overlay">
+    <div class="modal-content corporate-modal" style="width:700px; max-height:85vh;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3>💬 Diyalog Örnekleri Bankası Yönetimi</h3>
+        <span id="dialogue-list-total-count" style="color:#22c55e; font-weight:bold; font-size:13px;">0 Kayıt</span>
+      </div>
+
+      <!-- SEKMELER (TABS) -->
+      <div style="display:flex; gap:10px; border-bottom:1px solid var(--border-color); padding-bottom:8px; margin-top:8px;">
+        <button id="tab-btn-single" class="btn-pill active" style="font-size:12px; padding:6px 12px;">✏️ Tekli Ekle</button>
+        <button id="tab-btn-bulk" class="btn-pill" style="font-size:12px; padding:6px 12px; border-color:#8b5cf6; color:#c084fc;">📋 Toplu Kopyala/Yapıştır</button>
+      </div>
+
+      <!-- TEKLİ EKLEME FORMU -->
+      <div id="tab-content-single" style="background:rgba(0,0,0,0.2); padding:12px; border-radius:10px; border:1px solid var(--border-color); display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+        <div class="form-group">
+          <input type="text" id="dialogue-mgr-user" placeholder="Kullanıcının Sorduğu Cümle (Örn: naber naptın)">
+        </div>
+        <div class="form-group">
+          <input type="text" id="dialogue-mgr-ai" placeholder="Karakterin Vereceği Cevap (Örn: iyidir takılıyorum sen naptın)">
+        </div>
+        <button id="btn-add-dialogue-item" class="btn-primary" style="font-size:12px;">+ Diyalog Örneğini Ekle</button>
+      </div>
+
+      <!-- TOPLU KOPYALA / YAPIŞTIR FORMU -->
+      <div id="tab-content-bulk" style="display:none; background:rgba(0,0,0,0.2); padding:12px; border-radius:10px; border:1px solid rgba(139,92,246,0.3); flex-direction:column; gap:8px; margin-top:8px;">
+        <p style="font-size:11px; color:#c084fc;">Her satıra bir diyalog çifti yazıp topluca yapıştırabilirsiniz. Format Örnekleri:</p>
+        <pre style="font-size:10px; color:#94a3b8; background:rgba(0,0,0,0.3); padding:6px; border-radius:6px;">Soru: Sex yapmak ister misin
+Cevap: çok isterim gel de göster
+-- veya --
+naber => iyidir sen naptın</pre>
+        <textarea id="bulk-dialogue-textarea" rows="6" placeholder="Toplu diyalog metninizi buraya yapıştırın..." style="font-size:12px; font-family:monospace;"></textarea>
+        <button id="btn-bulk-import-dialogues" class="btn-primary" style="background:#7c3aed; font-size:12px;">🚀 Toplu Diyalogları İçe Aktar</button>
+      </div>
+
+      <div class="form-group" style="margin-top:12px;">
+        <input type="text" id="dialogue-mgr-search" placeholder="🔍 Mevcut Diyaloglarda Ara..." style="font-size:12px;">
+      </div>
+
+      <div id="dialogue-items-list" style="max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+        <!-- Diyaloglar Yüklenecek -->
+      </div>
+
+      <div class="modal-actions" style="justify-content:space-between;">
+        <button id="btn-clear-all-dialogues" class="btn-secondary" style="color:#ef4444; border-color:rgba(239,68,68,0.4); font-size:12px;">🗑️ Tüm Diyalogları Sıfırla (Hepsini Sil)</button>
+        <button id="btn-close-dialogue-manager" class="btn-primary">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÖZEL PROMPT MODALI -->
+  <div id="modal-prompt-editor" class="modal-overlay">
+    <div class="modal-content corporate-modal">
+      <h3>📝 Özel Sistem Promptu Düzenleyici</h3>
+      
+      <div class="form-group">
+        <label>Seçili Karakter</label>
+        <input type="text" id="prompt-modal-persona-name" readonly style="font-weight:bold; color:#c084fc;">
+      </div>
+
+      <div class="form-group">
+        <label>Özel System Prompt (Sistem İstemcisi)</label>
+        <textarea id="prompt-modal-text" rows="6" placeholder="Örn: Ukala, cesur, açık sözlü ve hazırcevap kız..."></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-cancel-prompt-modal" class="btn-secondary">İptal</button>
+        <button id="btn-save-prompt-modal" class="btn-primary">Kaydet & Uygula</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- API KEY MODALI -->
+  <div id="modal-api-keys" class="modal-overlay">
+    <div class="modal-content">
+      <h3>🔑 API Anahtarları Ayarı</h3>
+      <p style="font-size:11px; color:#94a3b8; margin-bottom:8px;">API anahtarınızı almak için başlığın yanındaki linke tıklayabilirsiniz:</p>
+      
+      <div class="form-group">
+        <label>xAI Grok API Key (Sansürsüz & Flört) — <a href="#" onclick="require('electron').shell.openExternal('https://console.x.ai/')" style="color:#38bdf8;">[API Al: console.x.ai]</a></label>
+        <input type="password" id="key-grok" placeholder="xai-...">
+      </div>
+      <div class="form-group">
+        <label>DeepSeek V3 API Key (Doğallık) — <a href="#" onclick="require('electron').shell.openExternal('https://platform.deepseek.com/')" style="color:#38bdf8;">[API Al: platform.deepseek.com]</a></label>
+        <input type="password" id="key-deepseek" placeholder="sk-...">
+      </div>
+      <div class="form-group">
+        <label>OpenAI API Key (Normal Konular) — <a href="#" onclick="require('electron').shell.openExternal('https://platform.openai.com/api-keys')" style="color:#38bdf8;">[API Al: platform.openai.com]</a></label>
+        <input type="password" id="key-openai" placeholder="sk-proj-...">
+      </div>
+      <div class="modal-actions">
+        <button id="btn-close-api-modal" class="btn-primary">Kaydet & Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
