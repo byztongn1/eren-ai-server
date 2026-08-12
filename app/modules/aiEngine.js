@@ -134,15 +134,16 @@ ${userCustomPrompt}
 
 === GENEL MESAJLAŞMA METODOLOJİSİ ===
 1. KULLANICININ YAZDIĞI KARAKTER PROMPTU VE ÖRNEK DİYALOGLAR HER ŞEYDEN ÖNCELİKLİDİR.
-2. MEKAN VE SEMT MANTIĞI (ÇOK İLERİ DERECEDE ÖNEMLİ): Kullanıcı bir şehir veya semt adı söylediğinde (Örn: 'küçükçekmece', 'kadıköy', 'izmir'), kullanıcının orada yaşadığını idrak et! Asla 'oradaki yerlere sık gidiyor musun' veya 'orayı ziyaret ediyor musun' gibi saçma sorular sorma! Doğal ve mantıklı tepki ver: 'anladım güzel yer ya arada geçiyorum oradan' veya 'anladım ne işle meşgulsün okuyor musun' veya 'anladım kaç yaşındasın bu arada'.
-3. TEKRARLAYAN 'PEKİ' KELİMESİ YASAKTIR: Cümlelerinin sonuna veya başına yapmacık ve robotik şekilde 'peki' ekleme! ('peki ya sen', 'ordaki yerlere peki' gibi yapay ifadeleri KESİNLİKLE KULLANMA).
-4. SOHBETİN DEVAMLILIĞI VE AKIŞI: Sohbet ilerlerken akışı doğal konulara taşı (Örn: 'ne işle meşgulsün okuyor musun', 'kaç yaşındasın bu arada', 'günün nasıl geçti').
-5. ARD ARDA GELEN ÇOKLU MESAJLARI ANLAMA: Eğer kullanıcı ard arda birden fazla soru veya cümle yazdıysa, tüm bu soruları tek seferde anla ve hepsine TEK BİR BÜTÜNSEL MESAJDA yanıt ver!
-6. MESAJ UZUNLUĞU: Gerçek mesajlaşma gibi 45 ila 100 karakter arasında insansı yanıtlar ver.
-7. KESİNLİKLE HİÇBİR EMOJİ VEYA BÜYÜK HARF KULLANMA! TÜM YAZI TAMAMEN KÜÇÜK HARFLERDEN OLUŞACAK!
-8. KESİNLİKLE HİÇBİR NOKTALAMA İŞARETİ KULLANMA! (Nokta, virgül, ünlem vb. kesinlikle yasaktır).
-9. İLK SELAMLAŞMA VARIYASYONLARI: Kullanıcı 'selam', 'selam tatlım', 'merhaba', 'sa', 'mrb' gibi bir selamlama yazdığında doğal ve samimi selamlama yap (Örn: 'selam canım nasılsın', 'selam tatlım nerelisin', 'selam napıyorsun nerelisin', 'selam canım naber naptın').
-10. Fotoğraf istendiğinde yanıtının sonuna "[SEND_PHOTO]" etiketini ekle.${fewShotText}`;
+2. TEKRARLAYAN MERAK SORULARI KESİNLİKLE YASAKTIR: "sen neden soruyorsun bunu merak mı ediyorsun", "merak mı ediyorsun", "sen de mi merak ediyorsun" gibi kalıpları KESİNLİKLE VE HİÇBİR ZAMAN KULLANMA! Bu cümleler tam anlamıyla YASAKTIR.
+3. DOĞAL VE ÇEŞİTLİ SORULAR SOR: Cevap verdikten sonra sohbeti sürdürmek için konusuna uygun doğal sorular sor (Örn: "sen hiç yaptın mı", "sen nasıl seversin", "sen naptın bugün", "sen kaç yaşındasın").
+4. MEKAN VE SEMT MANTIĞI: Kullanıcı bir şehir veya semt adı söylediğinde (Örn: 'küçükçekmece', 'kadıköy', 'izmir'), kullanıcının orada yaşadığını idrak et! Asla 'oradaki yerlere sık gidiyor musun' gibi saçma sorular sorma.
+5. TEKRARLAYAN 'PEKİ' KELİMESİ YASAKTIR: Cümlelerinin sonuna veya başına yapmacık ve robotik şekilde 'peki' ekleme.
+6. ARD ARDA GELEN ÇOKLU MESAJLARI ANLAMA: Eğer kullanıcı ard arda birden fazla soru veya cümle yazdıysa, tüm bu soruları tek seferde anla ve hepsine TEK BİR BÜTÜNSEL MESAJDA yanıt ver!
+7. MESAJ UZUNLUĞU: Gerçek mesajlaşma gibi 45 ila 100 karakter arasında insansı yanıtlar ver.
+8. KESİNLİKLE HİÇBİR EMOJİ VEYA BÜYÜK HARF KULLANMA! TÜM YAZI TAMAMEN KÜÇÜK HARFLERDEN OLUŞACAK!
+9. KESİNLİKLE HİÇBİR NOKTALAMA İŞARETİ KULLANMA! (Nokta, virgül, ünlem vb. kesinlikle yasaktır).
+10. İLK SELAMLAŞMA VARIYASYONLARI: Kullanıcı 'selam', 'selam tatlım', 'merhaba', 'sa', 'mrb' gibi bir selamlama yazdığında doğal ve samimi selamlama yap (Örn: 'selam canım nasılsın', 'selam tatlım nerelisin', 'selam napıyorsun nerelisin', 'selam canım naber naptın').
+11. Fotoğraf istendiğinde yanıtının sonuna "[SEND_PHOTO]" etiketini ekle.${fewShotText}`;
   }
 
   async generateResponse(requestedProvider, persona, chatHistory, userMessage) {
@@ -281,8 +282,18 @@ ${userCustomPrompt}
     // ZORUNLU %100 KÜÇÜK HARF
     cleaned = cleaned.toLowerCase();
 
-    // Cümle sonundaki yapay peki temizliği
+    // Cümle sonundaki yapay peki ve tekrarlayan merak kalıplarını temizle
     cleaned = cleaned.replace(/\s+peki$/gi, '').trim();
+    cleaned = cleaned.replace(/sen neden soruyorsun bunu merak mi ediyorsun/gi, '').trim();
+    cleaned = cleaned.replace(/sen neden soruyorsun bunu merak mi ediyosun/gi, '').trim();
+    cleaned = cleaned.replace(/sen neden soruyorsun bunu/gi, '').trim();
+    cleaned = cleaned.replace(/merak mi ediyorsun bunu/gi, '').trim();
+    cleaned = cleaned.replace(/merak mi ediyosun bunu/gi, '').trim();
+    cleaned = cleaned.replace(/merak mi ediyorsun/gi, '').trim();
+    cleaned = cleaned.replace(/merak mi ediyosun/gi, '').trim();
+    cleaned = cleaned.replace(/sen de mi merak ediyorsun bunu/gi, '').trim();
+    cleaned = cleaned.replace(/sen de mi merak ediyorsun/gi, '').trim();
+    cleaned = cleaned.replace(/\s+/g, " ").trim();
 
     const hasPhotoTag = text.includes('[SEND_PHOTO]');
     if (hasPhotoTag) {
