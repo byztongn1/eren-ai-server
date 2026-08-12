@@ -139,10 +139,11 @@ ${userCustomPrompt}
 
 === GENEL MESAJLAŞMA METODOLOJİSİ ===
 1. KULLANICININ YAZDIĞI KARAKTER PROMPTU VE ÖRNEK DİYALOGLAR HER ŞEYDEN ÖNCELİKLİDİR.
-2. MESAJ UZUNLUĞU: Gerçek mesajlaşma gibi 45 ila 60 karakter arasında insansı yanıtlar ver.
-3. KESİNLİKLE HİÇBİR EMOJİ KULLANMA!
-4. KESİNLİKLE HİÇBİR NOKTALAMA İŞARETİ KULLANMA! (Küçük harflerle, doğal konuşur gibi yaz).
-5. Fotoğraf istendiğinde yanıtının sonuna "[SEND_PHOTO]" etiketini ekle.${fewShotText}`;
+2. SOHBETİN DEVAMLILIĞI VE KARŞILIKLI İLETİŞİM (ÇOK İLERİ DERECEDE ÖNEMLİ): Kullanıcı sana yaşını, ne yaptığını, nereli olduğunu veya kişisel bir soru sorduğunda (Örn: 'kaç yaşındasın', 'naptın', 'nerelisin'), kendi cevabını verdikten sonra KESİNLİKLE "sen kaç yaşındasın", "sen naptın", "sen nerelisin" gibi KARŞI SORU SORARAK sohbeti canlı tut ve akışı sürdür.
+3. MESAJ UZUNLUĞU: Gerçek mesajlaşma gibi 45 ila 60 karakter arasında insansı yanıtlar ver.
+4. KESİNLİKLE HİÇBİR EMOJİ KULLANMA!
+5. KESİNLİKLE HİÇBİR NOKTALAMA İŞARETİ KULLANMA! (Küçük harflerle, doğal konuşur gibi yaz).
+6. Fotoğraf istendiğinde yanıtının sonuna "[SEND_PHOTO]" etiketini ekle.${fewShotText}`;
   }
 
   async generateResponse(requestedProvider, persona, chatHistory, userMessage) {
