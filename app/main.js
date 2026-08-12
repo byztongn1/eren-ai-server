@@ -158,44 +158,74 @@ ipcMain.handle('select-media-folder', async () => {
   return null;
 });
 
-// 5. Ana Sohbet Mesaj Gönder / Yanıt Al
+// 5. Ana Sohbet Mesaj Gönder / Yanıt Al (Ard Arda Mesaj Birleştirici Tamponlu)
+const desktopMessageBuffers = {};
+
 ipcMain.handle('send-chat-message', async (event, { personaId, userId, message, provider }) => {
   const persona = personaManager.getPersonaById(personaId);
   if (!persona) throw new Error('Karakter bulunamadı');
 
-  const selectedProvider = provider || persona.provider || 'grok';
+  const targetUserId = userId || 'user_demo_1';
+  const bufferKey = `${personaId}_${targetUserId}`;
 
-  // 1. Kullanıcı mesajını yerel SQLite'a yaz
-  memoryStore.addMessage(personaId, userId, 'user', message);
-
-  // 2. Token tasarruflu bağlamı getir
-  const historyContext = memoryStore.getOptimizedContext(personaId, userId);
-
-  // 3. AI Yanıtı Üret
-  let aiReply = await aiEngine.generateResponse(selectedProvider, persona, historyContext, message);
-
-  let attachedPhoto = null;
-
-  // 4. Eğer yanıt [SEND_PHOTO] etiketi içeriyorsa veya mesajda resim istendiyse klasörden rastgele fotoğraf çek
-  const isPhotoRequested = message.toLowerCase().includes('foto') ||
-                           message.toLowerCase().includes('resim') ||
-                           message.toLowerCase().includes('görsel') ||
-                           aiReply.includes('[SEND_PHOTO]');
-
-  if (isPhotoRequested) {
-    attachedPhoto = personaManager.getRandomPhoto(personaId);
-    aiReply = aiReply.replace('[SEND_PHOTO]', '').trim();
+  if (!desktopMessageBuffers[bufferKey]) {
+    desktopMessageBuffers[bufferKey] = {
+      messages: [],
+      promises: [],
+      timer: null
+    };
   }
 
-  // 5. Asistan yanıtını SQLite'a yaz
-  memoryStore.addMessage(personaId, userId, 'assistant', aiReply, attachedPhoto);
+  const buf = desktopMessageBuffers[bufferKey];
+  buf.messages.push(message);
 
-  return {
-    reply: aiReply,
-    attachedPhoto: attachedPhoto,
-    personaName: persona.name,
-    provider: selectedProvider
-  };
+  const promise = new Promise((resolve, reject) => {
+    buf.promises.push({ resolve, reject });
+  });
+
+  if (buf.timer) clearTimeout(buf.timer);
+
+  buf.timer = setTimeout(async () => {
+    const combinedMessage = buf.messages.join(' ');
+    const currentPromises = [...buf.promises];
+
+    delete desktopMessageBuffers[bufferKey];
+
+    try {
+      memoryStore.addMessage(personaId, targetUserId, 'user', combinedMessage);
+      const historyContext = memoryStore.getOptimizedContext(personaId, targetUserId);
+
+      const selectedProvider = provider || persona.provider || 'grok';
+      let aiReply = await aiEngine.generateResponse(selectedProvider, persona, historyContext, combinedMessage);
+
+      let attachedPhoto = null;
+      const isPhotoRequested = combinedMessage.toLowerCase().includes('foto') ||
+                               combinedMessage.toLowerCase().includes('resim') ||
+                               combinedMessage.toLowerCase().includes('görsel') ||
+                               aiReply.includes('[SEND_PHOTO]');
+
+      if (isPhotoRequested) {
+        attachedPhoto = personaManager.getRandomPhoto(personaId);
+        aiReply = aiReply.replace('[SEND_PHOTO]', '').trim();
+      }
+
+      memoryStore.addMessage(personaId, targetUserId, 'assistant', aiReply, attachedPhoto);
+
+      const payload = {
+        reply: aiReply,
+        attachedPhoto,
+        personaName: persona.name,
+        provider: selectedProvider,
+        combinedCount: buf.messages.length
+      };
+
+      currentPromises.forEach(p => p.resolve(payload));
+    } catch (err) {
+      currentPromises.forEach(p => p.reject(err));
+    }
+  }, 1200);
+
+  return await promise;
 });
 
 // 6. ADB Cihazları Listele

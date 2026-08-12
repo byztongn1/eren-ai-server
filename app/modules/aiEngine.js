@@ -140,10 +140,11 @@ ${userCustomPrompt}
 === GENEL MESAJLAŞMA METODOLOJİSİ ===
 1. KULLANICININ YAZDIĞI KARAKTER PROMPTU VE ÖRNEK DİYALOGLAR HER ŞEYDEN ÖNCELİKLİDİR.
 2. SOHBETİN DEVAMLILIĞI VE KARŞILIKLI İLETİŞİM (ÇOK İLERİ DERECEDE ÖNEMLİ): Kullanıcı sana yaşını, ne yaptığını, nereli olduğunu veya kişisel bir soru sorduğunda (Örn: 'kaç yaşındasın', 'naptın', 'nerelisin'), kendi cevabını verdikten sonra KESİNLİKLE "sen kaç yaşındasın", "sen naptın", "sen nerelisin" gibi KARŞI SORU SORARAK sohbeti canlı tut ve akışı sürdür.
-3. MESAJ UZUNLUĞU: Gerçek mesajlaşma gibi 45 ila 100 karakter arasında insansı yanıtlar ver.
-4. KESİNLİKLE HİÇBİR EMOJİ KULLANMA!
-5. KESİNLİKLE HİÇBİR NOKTALAMA İŞARETİ KULLANMA! (Küçük harflerle, doğal konuşur gibi yaz).
-6. Fotoğraf istendiğinde yanıtının sonuna "[SEND_PHOTO]" etiketini ekle.${fewShotText}`;
+3. ARD ARDA GELEN ÇOKLU MESAJLARI ANLAMA: Eğer kullanıcı ard arda birden fazla soru veya cümle yazdıysa (Örn: 'ne yapıyorsun nerelisin'), tüm bu soruları tek seferde anla ve hepsine TEK BİR BÜTÜNSEL MESAJDA yanıt ver!
+4. MESAJ UZUNLUĞU: Gerçek mesajlaşma gibi 45 ila 100 karakter arasında insansı yanıtlar ver.
+5. KESİNLİKLE HİÇBİR EMOJİ VEYA BÜYÜK HARF KULLANMA! TÜM YAZI TAMAMEN KÜÇÜK HARFLERDEN OLUŞACAK!
+6. KESİNLİKLE HİÇBİR NOKTALAMA İŞARETİ KULLANMA! (Nokta, virgül, ünlem vb. kesinlikle yasaktır).
+7. Fotoğraf istendiğinde yanıtının sonuna "[SEND_PHOTO]" etiketini ekle.${fewShotText}`;
   }
 
   async generateResponse(requestedProvider, persona, chatHistory, userMessage) {
@@ -183,7 +184,6 @@ ${userCustomPrompt}
     const apiKey = this.apiKeys.grok || process.env.GROK_API_KEY;
     if (!apiKey) throw new Error('Grok API Key eksik');
 
-    // Model fallback: grok-2-latest -> grok-2 -> grok-beta
     const models = ['grok-2-latest', 'grok-2', 'grok-beta'];
     let lastError = null;
 
@@ -263,8 +263,10 @@ ${userCustomPrompt}
     let cleaned = text.trim();
     cleaned = cleaned.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E6}-\u{1F1FF}]/gu, '');
     cleaned = cleaned.replace(/[.,\/#!?$%'\^&\*;:{}=\-_`~()"'’]/g, " ").replace(/\s+/g, " ").trim();
-    cleaned = cleaned.toLowerCase();
     
+    // ZORUNLU %100 KÜÇÜK HARF
+    cleaned = cleaned.toLowerCase();
+
     const hasPhotoTag = text.includes('[SEND_PHOTO]');
     if (hasPhotoTag) {
       cleaned = cleaned.replace(/\[send_photo\]/gi, '').trim();
@@ -277,6 +279,9 @@ ${userCustomPrompt}
         cleaned = cleaned.substring(0, lastSpace);
       }
     }
+
+    // SON KONTROL: GARANTİLİ KÜÇÜK HARF
+    cleaned = cleaned.toLowerCase().trim();
 
     if (hasPhotoTag) {
       cleaned = cleaned + ' [SEND_PHOTO]';

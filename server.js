@@ -1,6 +1,7 @@
 /**
  * Eren AI — 24/7 Railway Server & Web Panel Server
  * Hem Web Arayüzünü Servis Eder Hem de REST API Endpoints Sunar
+ * Ard Arda Mesaj Birleştirici (Multi-Message Buffer) Entegreli
  */
 
 const express = require('express');
@@ -28,6 +29,9 @@ const aiEngine = new AIEngine();
 const personaManager = new PersonaManager();
 const memoryStore = new MemoryStore();
 const adbStealth = new ADBStealth();
+
+// Ard arda gelen kullanıcı mesajlarını birleştirici (Message Buffer Map)
+const messageBuffers = {};
 
 // -------------------------------------------------------------
 // REST API ENDPOINTS (WEB & 24/7 BULUT DEPLOYMENT İÇİN)
@@ -69,7 +73,7 @@ app.get('/api/chat/history', (req, res) => {
   res.json(history);
 });
 
-// 7. Mesaj Gönder & AI Yanıtı Al
+// 7. Mesaj Gönder & AI Yanıtı Al (Ard Arda Mesaj Birleştiricili)
 app.post('/api/chat', async (req, res) => {
   try {
     const { personaId, userId, message, provider } = req.body;
@@ -77,32 +81,67 @@ app.post('/api/chat', async (req, res) => {
     if (!persona) return res.status(404).json({ error: 'Karakter bulunamadı' });
 
     const targetUserId = userId || 'user_demo_1';
-    const selectedProvider = provider || persona.provider || 'grok';
+    const bufferKey = `${personaId}_${targetUserId}`;
 
-    memoryStore.addMessage(personaId, targetUserId, 'user', message);
-    const historyContext = memoryStore.getOptimizedContext(personaId, targetUserId);
-
-    let aiReply = await aiEngine.generateResponse(selectedProvider, persona, historyContext, message);
-
-    let attachedPhoto = null;
-    const isPhotoRequested = message.toLowerCase().includes('foto') ||
-                             message.toLowerCase().includes('resim') ||
-                             message.toLowerCase().includes('görsel') ||
-                             aiReply.includes('[SEND_PHOTO]');
-
-    if (isPhotoRequested) {
-      attachedPhoto = personaManager.getRandomPhoto(personaId);
-      aiReply = aiReply.replace('[SEND_PHOTO]', '').trim();
+    if (!messageBuffers[bufferKey]) {
+      messageBuffers[bufferKey] = {
+        messages: [],
+        promises: [],
+        timer: null
+      };
     }
 
-    memoryStore.addMessage(personaId, targetUserId, 'assistant', aiReply, attachedPhoto);
+    const buf = messageBuffers[bufferKey];
+    buf.messages.push(message);
 
-    res.json({
-      reply: aiReply,
-      attachedPhoto,
-      personaName: persona.name,
-      provider: selectedProvider
+    const promise = new Promise((resolve, reject) => {
+      buf.promises.push({ resolve, reject });
     });
+
+    if (buf.timer) clearTimeout(buf.timer);
+
+    buf.timer = setTimeout(async () => {
+      const combinedMessage = buf.messages.join(' ');
+      const currentPromises = [...buf.promises];
+
+      delete messageBuffers[bufferKey];
+
+      try {
+        memoryStore.addMessage(personaId, targetUserId, 'user', combinedMessage);
+        const historyContext = memoryStore.getOptimizedContext(personaId, targetUserId);
+
+        const selectedProvider = provider || persona.provider || 'grok';
+        let aiReply = await aiEngine.generateResponse(selectedProvider, persona, historyContext, combinedMessage);
+
+        let attachedPhoto = null;
+        const isPhotoRequested = combinedMessage.toLowerCase().includes('foto') ||
+                                 combinedMessage.toLowerCase().includes('resim') ||
+                                 combinedMessage.toLowerCase().includes('görsel') ||
+                                 aiReply.includes('[SEND_PHOTO]');
+
+        if (isPhotoRequested) {
+          attachedPhoto = personaManager.getRandomPhoto(personaId);
+          aiReply = aiReply.replace('[SEND_PHOTO]', '').trim();
+        }
+
+        memoryStore.addMessage(personaId, targetUserId, 'assistant', aiReply, attachedPhoto);
+
+        const payload = {
+          reply: aiReply,
+          attachedPhoto,
+          personaName: persona.name,
+          provider: selectedProvider,
+          combinedCount: buf.messages.length
+        };
+
+        currentPromises.forEach(p => p.resolve(payload));
+      } catch (err) {
+        currentPromises.forEach(p => p.reject(err));
+      }
+    }, 1200); // 1.2 saniye içinde gelen tüm mesajları birleştirir
+
+    const responseData = await promise;
+    res.json(responseData);
   } catch (err) {
     console.error('API Chat Hatası:', err);
     res.status(500).json({ error: err.message });
