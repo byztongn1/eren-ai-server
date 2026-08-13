@@ -697,6 +697,10 @@ function setupEventListeners() {
 
   btnSavePersona.onclick = async () => {
     const name = document.getElementById('new-name').value.trim();
+    const hometownInput = document.getElementById('new-hometown');
+    const locationInput = document.getElementById('new-location');
+    const hometown = hometownInput ? hometownInput.value.trim() : '';
+    const location = locationInput ? locationInput.value.trim() : '';
     const folderPath = newFolderPathInput.value.trim();
 
     const activeTraits = Array.from(document.querySelectorAll('#group-traits .tag-pill.active'))
@@ -708,16 +712,25 @@ function setupEventListeners() {
       return;
     }
 
-    const systemPrompt = activeTraits || 'Samimi, hızlı ve neşeli konuşan arkadaş';
+    let systemPrompt = activeTraits || 'Samimi, hızlı ve neşeli konuşan arkadaş';
+    if (hometown) systemPrompt += `. Memleketi: ${hometown}`;
+    if (location) systemPrompt += `. Yaşadığı Semt/Şehir: ${location}`;
 
     const newP = await apiCall('add-persona', {
       name,
       age: selectedAge,
       gender: selectedGender,
+      hometown,
+      location,
       provider: 'auto',
       systemPrompt: systemPrompt,
       mediaFolderPath: folderPath
     });
+
+    if (document.getElementById('new-name')) document.getElementById('new-name').value = '';
+    if (hometownInput) hometownInput.value = '';
+    if (locationInput) locationInput.value = '';
+    newFolderPathInput.value = '';
 
     modalAddPersona.classList.remove('open');
     await loadPersonas();
