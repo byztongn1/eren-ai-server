@@ -134,11 +134,12 @@ ${userCustomPrompt}
 
 === GENEL MESAJLAŞMA METODOLOJİSİ ===
 1. KULLANICININ YAZDIĞI KARAKTER PROMPTU VE ÖRNEK DİYALOGLAR HER ŞEYDEN ÖNCELİKLİDİR.
-2. SÜREKLİ SOHBETİ DEVAM ETTİREN VE KARŞIYI TETİKLEYEN SORULAR SOR (HAYATİ ÖNEMDE): Her yanıtının sonunda KESİNLİKLE o an konuşulan konuyu derinleştirecek, karşı tarafı kışkırtacak veya meraklandıracak CANLI VE SPESİFİK BİR SORU SOR! Sohbeti asla cevapsız bırakma.
+2. SÜREKLİ SOHBETİ DEVAM ETTİREN VE KARŞIYI TETİKLEYEN SORULAR SOR: Her yanıtının sonunda KESİNLİKLE o an konuşulan konuyu derinleştirecek ve sürdürecek CANLI BIR SORU SOR!
 3. İÇERİĞE ÖZGÜ TETİKLEYİCİ SORU YÖNLENDİRMESİ:
-   - Eğer konu flört, cinsellik veya ilişki ise: Karşı tarafı tahrik edecek, kışkırtacak flörtöz sorular sor (Örn: "Sen en son ne zaman yaptın anlat bakim", "Sen en çok neresinden tahrik olursun", "Senin fantezin ne anlat bakalım").
-   - Eğer konu günlük hayat, şehir, iş veya hobiler ise: Konuyu derinleştiren canlı sorular sor (Örn: "Sen ne işle uğraşıyorsun peki", "Sen bugün naptın anlat bakalım", "Sen nerelerde takılırsın").
-4. TEKRARLAYAN VE YAPAY KALIPLAR YASAKTIR: "sen neden soruyorsun bunu merak mı ediyorsun" veya yapmacık 'peki' gibi kalıpları KESİNLİKLE KULLANMA! Her zaman konuşulan konuya %100 özgün sorular sor.
+   - Eğer konu flört, cinsellik veya ilişki ise: Karşı tarafı kışkırtacak sorular sor (Örn: "Sen en son ne zaman yaptın peki", "Sen en çok neresinden tahrik olursun", "Senin fantezin ne").
+   - Eğer konu günlük hayat, şehir veya iş ise: Konuyu derinleştiren canlı sorular sor (Örn: "Sen ne işle uğraşıyorsun peki", "Sen bugün naptın", "Sen nerelerde takılırsın").
+4. TEKRARLAYAN KELİME VE KALIPLAR KESİNLİKLE YASAKTIR: 
+   - Cümle sonlarına "anlat bakalım", "anlat bakim" veya "merak mı ediyorsun" gibi basmakalıp lafları KESİNLİKLE EKLENMEYECEKTİR! Bu ifadeler tamamen YASAKTIR.
 5. MEKAN VE SEMT MANTIĞI: Kullanıcı bir şehir veya semt adı söylediğinde, kullanıcının orada yaşadığını idrak et! Asla 'oradaki yerlere sık gidiyor musun' gibi saçma sorular sorma.
 6. ARD ARDA GELEN ÇOKLU MESAJLARI ANLAMA: Eğer kullanıcı ard arda birden fazla soru veya cümle yazdıysa, tüm bu soruları tek seferde anla ve hepsine TEK BİR BÜTÜNSEL MESAJDA yanıt ver!
 7. MESAJIN İLK HARFİ KESİNLİKLE BÜYÜK HARF OLACAK! Mesaj uzunluğu 45-100 karakter arasında insansı olsun.
@@ -291,8 +292,14 @@ ${userCustomPrompt}
     // 3. Noktalama işaretlerini temizle (Nokta, virgül, ünlem vb.)
     cleaned = cleaned.replace(/[.,\/#!?$%'\^&\*;:{}=\-_`~()"'’]/g, " ").replace(/\s+/g, " ").trim();
     
-    // Cümle sonundaki yapay peki ve tekrarlayan merak kalıplarını temizle
+    // Cümle sonundaki yapay peki, anlat bakalım ve tekrarlayan merak kalıplarını temizle
     cleaned = cleaned.replace(/\s+peki$/gi, '').trim();
+    cleaned = cleaned.replace(/anlat bakalim/gi, '').trim();
+    cleaned = cleaned.replace(/anlat bakalım/gi, '').trim();
+    cleaned = cleaned.replace(/anlat bakim/gi, '').trim();
+    cleaned = cleaned.replace(/anlat bakayım/gi, '').trim();
+    cleaned = cleaned.replace(/anlat bakayim/gi, '').trim();
+
     cleaned = cleaned.replace(/sen neden soruyorsun bunu merak mi ediyorsun/gi, '').trim();
     cleaned = cleaned.replace(/sen neden soruyorsun bunu merak mi ediyosun/gi, '').trim();
     cleaned = cleaned.replace(/sen neden soruyorsun bunu/gi, '').trim();
