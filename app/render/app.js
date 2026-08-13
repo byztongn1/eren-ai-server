@@ -44,6 +44,10 @@ async function apiCall(channel, data = null) {
       const res = await fetch(`/api/chat/history?personaId=${data.personaId}&userId=${data.userId}`);
       return await res.json();
     }
+    if (channel === 'get-analytics') {
+      const res = await fetch('/api/analytics');
+      return await res.json();
+    }
     if (channel === 'send-chat-message') {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -206,6 +210,23 @@ async function loadPersonas() {
   }
 }
 
+async function loadAnalyticsStats() {
+  const analyticsTotalUsersEl = document.getElementById('analytics-total-users');
+  const analyticsConvertedEl = document.getElementById('analytics-converted');
+  const analyticsRateEl = document.getElementById('analytics-rate');
+
+  if (!analyticsTotalUsersEl) return;
+
+  try {
+    const stats = await apiCall('get-analytics');
+    if (stats) {
+      analyticsTotalUsersEl.innerText = `${stats.totalUsers || 0} Kişi`;
+      analyticsConvertedEl.innerText = `${stats.convertedCount || 0} İletişim`;
+      analyticsRateEl.innerText = `%${stats.conversionRate || 0}`;
+    }
+  } catch (e) {}
+}
+
 async function loadDialogueExamplesCount() {
   try {
     allDialogueExamples = await apiCall('get-dialogue-examples');
@@ -213,6 +234,7 @@ async function loadDialogueExamplesCount() {
       dialogueCountBadgeEl.innerText = `${(allDialogueExamples || []).length} Örnek Kayıtlı`;
     }
   } catch (e) {}
+  await loadAnalyticsStats();
 }
 
 // DİYALOG ÖRNEKLERİ LİSTELEME VE ARAMA

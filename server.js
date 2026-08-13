@@ -126,25 +126,43 @@ app.post('/api/chat', async (req, res) => {
 
         memoryStore.addMessage(personaId, targetUserId, 'assistant', aiReply, attachedPhoto);
 
+        // MADDE 3: İnsan Taklidi Gecikme & Anti-Bot Koruması (Human Typing Delay Calculator)
+        const charSpeedMs = 90 + Math.floor(Math.random() * 40);
+        const thinkingMs = 1200 + Math.floor(Math.random() * 1800);
+        const calculatedMs = (aiReply.length * charSpeedMs) + thinkingMs;
+        const typingDelayMs = Math.min(16000, Math.max(2500, calculatedMs));
+
         const payload = {
           reply: aiReply,
           attachedPhoto,
           personaName: persona.name,
           provider: selectedProvider,
-          combinedCount: buf.messages.length
+          combinedCount: buf.messages.length,
+          typingDelayMs: typingDelayMs,
+          humanTypingDelaySeconds: Math.round(typingDelayMs / 1000)
         };
 
         currentPromises.forEach(p => p.resolve(payload));
       } catch (err) {
         currentPromises.forEach(p => p.reject(err));
       }
-    }, 1200); // 1.2 saniye içinde gelen tüm mesajları birleştirir
+    }, 1200);
 
     const responseData = await promise;
     res.json(responseData);
   } catch (err) {
     console.error('API Chat Hatası:', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// MADDE 5: Canlı Analitik & Dönüşüm İstatistikleri Endpointi
+app.get('/api/analytics', (req, res) => {
+  try {
+    const stats = memoryStore.getAnalyticsStats();
+    res.json(stats);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 

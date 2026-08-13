@@ -1,6 +1,6 @@
 /**
- * Eren AI Masaüstü Uygulaması — Soyo & Emülatör Entegreli 30 Günlük Kalıcı Hafıza Motoru
- * Her Soyo Kullanıcısı İçin Profil Niteliklerini Kalıcı Depolayan & 30 Günlük Geçmişi Saklayan Önbellek Mimarisi
+ * Eren AI Masaüstü Uygulaması — Soyo & Emülatör Entegreli 30 Günlük Kalıcı Hafıza & Analitik Motoru
+ * Her Soyo Kullanıcısı İçin Profil Niteliklerini Kalıcı Depolayan, Dönüşüm İstatistiklerini Hesaplayan Önbellek Mimarisi
  */
 
 const path = require('path');
@@ -101,6 +101,10 @@ class MemoryStore {
                 createdAt: h.ts || new Date().toISOString()
               });
               importedCount++;
+
+              if (sender === 'user') {
+                this.extractUserFacts(pId, uId, content);
+              }
             }
           });
         }
@@ -139,7 +143,7 @@ class MemoryStore {
   }
 
   /**
-   * Soyo Kullanıcı Cümlelerinden Boy, Yaş, Şehir, Meslek, İlgi Alanı vb. Nitelikleri Çıkar ve Kalıcı Depola
+   * Soyo Kullanıcı Cümlelerinden Boy, Yaş, Şehir, Meslek, Telefon, Instagram vb. Derin Nitelikleri Çıkar ve Depola
    */
   extractUserFacts(personaId, userId, message) {
     if (!message) return;
@@ -149,7 +153,17 @@ class MemoryStore {
     let currentFacts = this.data.userSummaries[key] || '';
     const factList = currentFacts ? currentFacts.split(', ') : [];
 
-    // 1. Boy Tespiti
+    // 1. Telefon ve Instagram Dönüşüm Tespiti (Örn: 0532..., instagram: @ahmet, insta vb.)
+    const phoneMatch = message.match(/(05\d{2}\s*\d{3}\s*\d{2}\s*\d{2}|5\d{9})/);
+    if (phoneMatch && !currentFacts.includes('DÖNÜŞÜM: Telefon Aldı')) {
+      factList.push(`DÖNÜŞÜM: Telefon Aldı (${phoneMatch[1].replace(/\s+/g, '')})`);
+    }
+
+    if ((msgLower.includes('insta') || msgLower.includes('instagram') || msgLower.includes('@')) && !currentFacts.includes('DÖNÜŞÜM: Instagram')) {
+      factList.push('DÖNÜŞÜM: Instagram/Sosyal Medya Bilgisi Verdi');
+    }
+
+    // 2. Boy Tespiti
     const heightMatch = msgLower.match(/(1[5-9]\d|200)\s*(cm|m|boy|boyum)?/);
     if (heightMatch && (msgLower.includes('boy') || msgLower.includes('cm') || heightMatch[1].length === 3)) {
       const heightVal = heightMatch[1];
@@ -158,13 +172,13 @@ class MemoryStore {
       }
     }
 
-    // 2. Yaş Tespiti
+    // 3. Yaş Tespiti
     const ageMatch = msgLower.match(/(\d{2})\s*(yaş|yaşında|yaşındayım)/);
     if (ageMatch && !currentFacts.includes('Yaş:')) {
       factList.push(`Yaş: ${ageMatch[1]}`);
     }
 
-    // 3. Şehir/Semt Tespiti
+    // 4. Şehir/Semt Tespiti
     const cities = ['istanbul', 'ankara', 'izmir', 'bursa', 'antalya', 'adana', 'konya', 'gaziantep', 'kocaeli', 'mersin', 'diyarbakır', 'hatay', 'manisa', 'kayseri', 'samsun', 'balıkesir', 'eskişehir', 'trabzon', 'muğla', 'denizli', 'aydın', 'sakarya', 'tekirdağ', 'beşiktaş', 'kadıköy', 'şişli', 'üsküdar', 'beylikdüzü', 'çankaya'];
     cities.forEach(c => {
       if (msgLower.includes(c) && !currentFacts.includes('Kullanıcı Şehri/Semti:')) {
@@ -172,7 +186,7 @@ class MemoryStore {
       }
     });
 
-    // 4. Meslek Tespiti
+    // 5. Meslek Tespiti
     const jobs = ['mühendis', 'yazılımcı', 'doktor', 'öğretmen', 'avukat', 'mimar', 'tamirci', 'esnaf', 'öğrenci', 'asker', 'polis', 'berber', 'kuaför', 'garson', 'aşçı', 'hemşire', 'memur', 'şoför', 'pazarlamacı'];
     jobs.forEach(j => {
       if (msgLower.includes(j) && !currentFacts.includes('Meslek:')) {
@@ -180,7 +194,7 @@ class MemoryStore {
       }
     });
 
-    // 5. İlgi Alanı / Evcil Hayvan / Medeni Hal Tespiti
+    // 6. İlgi Alanı / Evcil Hayvan / Medeni Hal Tespiti
     if (msgLower.includes('kedi') && !currentFacts.includes('Kedisi var')) factList.push('Kedisi var');
     if (msgLower.includes('köpek') && !currentFacts.includes('Köpeği var')) factList.push('Köpeği var');
     if (msgLower.includes('araba') || msgLower.includes('arabam')) {
@@ -238,6 +252,31 @@ class MemoryStore {
     });
 
     return history;
+  }
+
+  /**
+   * CANLI DÖNÜŞÜM & ANALİTİK İSTATİSTİKLERİNİ HESAPLA (MADDE 5)
+   */
+  getAnalyticsStats() {
+    const userIds = new Set(this.data.messages.map(m => m.userId).filter(Boolean));
+    const totalMessages = this.data.messages.length;
+    
+    let convertedCount = 0;
+    Object.values(this.data.userSummaries).forEach(sum => {
+      if (sum && (sum.includes('DÖNÜŞÜM:') || sum.includes('Telefon') || sum.includes('Instagram'))) {
+        convertedCount++;
+      }
+    });
+
+    const totalUsers = userIds.size || Object.keys(this.data.userSummaries).length || 1;
+    const conversionRate = Math.round((convertedCount / totalUsers) * 100);
+
+    return {
+      totalUsers,
+      totalMessages,
+      convertedCount,
+      conversionRate: isNaN(conversionRate) ? 0 : conversionRate
+    };
   }
 
   updateUserSummary(personaId, userId, facts) {
