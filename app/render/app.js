@@ -239,10 +239,10 @@ function renderDialogueItemsList(filterQuery = '') {
 
     el.innerHTML = `
       <div style="flex:1; display:flex; flex-direction:column; gap:2px; overflow:hidden;">
-        <div style="color:#c084fc; font-weight:600; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">👤 Soru: "${escapeHtml(item.ex.user)}"</div>
-        <div style="color:#38bdf8; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">🤖 Yanıt: "${escapeHtml(item.ex.ai)}"</div>
+        <div style="color:#c084fc; font-weight:600; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">Soru: "${escapeHtml(item.ex.user)}"</div>
+        <div style="color:#38bdf8; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">Yanıt: "${escapeHtml(item.ex.ai)}"</div>
       </div>
-      <button class="btn-secondary" style="color:#ef4444; border-color:rgba(239,68,68,0.3); padding:4px 8px; font-size:11px; margin-left:10px;" onclick="deleteDialogueItem(${item.originalIndex})">🗑️ Sil</button>
+      <button class="btn-secondary" style="color:#ef4444; border-color:rgba(239,68,68,0.3); padding:4px 8px; font-size:11px; margin-left:10px;" onclick="deleteDialogueItem(${item.originalIndex})">Sil</button>
     `;
 
     dialogueItemsListEl.appendChild(el);
@@ -314,7 +314,7 @@ async function setActivePersona(persona) {
 
   chatMessagesEl.innerHTML = `
     <div class="system-message">
-      💡 ${escapeHtml(persona.name)} ile sohbet. Geçmiş konuşmalarınız korunuyor.
+      ${escapeHtml(persona.name)} ile sohbet. Geçmiş konuşmalarınız korunuyor.
     </div>
   `;
 
@@ -522,7 +522,7 @@ function setupEventListeners() {
       if (res && res.success) {
         await loadDialogueExamplesCount();
         renderDialogueItemsList();
-        alert('🗑️ Tüm diyalog örnekleri başarıyla silindi ve sıfırlandı.');
+        alert('Tüm diyalog örnekleri başarıyla silindi ve sıfırlandı.');
       }
     }
   };
@@ -596,7 +596,7 @@ function setupEventListeners() {
         bulkDialogueTextarea.value = '';
         await loadDialogueExamplesCount();
         renderDialogueItemsList(dialogueMgrSearch.value);
-        alert(`✅ ${res.addedCount} adet soru-cevap diyalog örneği başarıyla içe aktarıldı! (Toplam: ${res.total})`);
+        alert(`${res.addedCount} adet soru-cevap diyalog örneği başarıyla içe aktarıldı. (Toplam: ${res.total})`);
       } else {
         alert('Toplu aktarım hatası: ' + (res?.error || 'Bilinmeyen hata'));
       }
@@ -644,7 +644,7 @@ function setupEventListeners() {
     });
     if (res && res.success) {
       activePersona.systemPrompt = newPrompt;
-      alert('✅ Karakter promptu başarıyla güncellendi!');
+      alert('Karakter promptu başarıyla güncellendi.');
     }
   };
 
@@ -674,7 +674,7 @@ function setupEventListeners() {
     inspectorPromptEl.value = newPrompt;
 
     modalPromptEditor.classList.remove('open');
-    alert('✅ Prompt Başarıyla Kaydedildi!');
+    alert('Prompt Başarıyla Kaydedildi.');
     if (chatInputEl) chatInputEl.focus();
   };
 
