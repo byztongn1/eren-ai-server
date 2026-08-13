@@ -1,23 +1,27 @@
-/* Eren AI Masaüstü Uygulaması — CSS Tasarım Sistemi (Dark Glassmorphism & Corporate Controls) */
+/* Eren AI Masaüstü Uygulaması — Kurumsal White-Label CSS Tasarım Sistemi */
 
 :root {
-  --bg-dark: #090d16;
-  --bg-card: #131b2e;
-  --bg-hover: #1e293b;
-  --primary: #8b5cf6;
-  --primary-hover: #7c3aed;
-  --cyan-accent: #38bdf8;
-  --green-accent: #22c55e;
+  --bg-dark: #070a12;
+  --bg-sidebar: #0f172a;
+  --bg-card: #1e293b;
+  --bg-hover: #334155;
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --cyan-accent: #0ea5e9;
+  --green-accent: #10b981;
+  --purple-accent: #8b5cf6;
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
-  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(148, 163, 184, 0.14);
+  --border-glow: rgba(99, 102, 241, 0.35);
+  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 body {
@@ -25,48 +29,78 @@ body {
   color: var(--text-main);
   height: 100vh;
   overflow: hidden;
+  user-select: none;
 }
 
 .app-container {
   display: grid;
-  grid-template-columns: 290px 1fr 300px;
+  grid-template-columns: 300px 1fr 320px;
   height: 100vh;
-  background: radial-gradient(circle at top left, #1e1b4b 0%, #090d16 60%);
+  background: radial-gradient(circle at top left, #1e1b4b 0%, #070a12 55%, #0f172a 100%);
 }
 
-/* SOL MENÜ (SIDEBAR) */
+/* ------------------------------------------------------------- */
+/* SOL MENÜ (SIDEBAR) - KURUMSAL WHITE-LABEL BANNER & KONTROLLER */
+/* ------------------------------------------------------------- */
 .sidebar {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(12px);
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 22px 18px;
   gap: 18px;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .brand-logo {
-  font-size: 32px;
+  font-size: 26px;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #6366f1, #0ea5e9);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
 }
 
 .brand-text h2 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 1px;
-  background: linear-gradient(90deg, #c084fc, #38bdf8);
+  letter-spacing: 0.8px;
+  background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
 }
 
 .brand-text span {
   font-size: 11px;
   color: var(--text-muted);
+  font-weight: 500;
+  display: block;
+  margin-top: 1px;
+}
+
+.whitelabel-badge {
+  display: inline-block;
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
 }
 
 /* ARAMA BARI */
@@ -76,24 +110,28 @@ body {
 
 .search-input {
   width: 100%;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(15, 23, 42, 0.6);
   border: 1px solid var(--border-color);
   color: var(--text-main);
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 12px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .search-input:focus {
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--border-glow);
+  background: rgba(30, 41, 59, 0.8);
 }
 
 .sidebar-section {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex: 1;
+  min-height: 0;
 }
 
 .section-title {
@@ -103,26 +141,38 @@ body {
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 0 2px;
 }
 
 .btn-icon {
-  background: var(--primary);
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
   color: white;
   border: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+  transition: transform 0.15s ease;
+}
+
+.btn-icon:hover {
+  transform: scale(1.08);
 }
 
 .personas-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 320px;
+  flex: 1;
   overflow-y: auto;
+  padding-right: 4px;
 }
 
 .persona-item {
@@ -131,27 +181,30 @@ body {
   gap: 12px;
   padding: 10px 12px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid transparent;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .persona-item:hover, .persona-item.active {
-  background: rgba(139, 92, 246, 0.18);
+  background: rgba(99, 102, 241, 0.18);
   border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
 }
 
 .avatar {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #a855f7, #6366f1);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #0ea5e9);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 15px;
+  color: white;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .persona-info {
@@ -165,6 +218,7 @@ body {
   font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
+  color: var(--text-main);
 }
 
 .persona-meta {
@@ -172,38 +226,71 @@ body {
   color: var(--text-muted);
 }
 
-.custom-select {
-  width: 100%;
-  padding: 10px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  border-radius: 8px;
-  outline: none;
-}
-
 .sidebar-bottom {
   margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn-secondary {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
 }
 
 .status-badge {
   font-size: 11px;
   text-align: center;
-  padding: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  color: var(--text-muted);
+  padding: 7px 10px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 8px;
+  color: var(--green-accent);
+  font-weight: 500;
 }
 
-/* ORTA SOHBET ALANI */
+/* ------------------------------------------------------------- */
+/* ORTA SOHBET ALANI (ENTERPRISE AGENT CONSOLE) */
+/* ------------------------------------------------------------- */
 .chat-area {
   display: flex;
   flex-direction: column;
   height: 100vh;
   border-right: 1px solid var(--border-color);
+  background: rgba(7, 10, 18, 0.6);
 }
 
 .chat-header {
@@ -212,27 +299,37 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(12px);
 }
 
 .active-persona-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+}
+
+.chat-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
 }
 
 .chat-header p {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .badge-tag {
-  background: rgba(34, 197, 94, 0.15);
-  color: var(--green-accent);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  padding: 4px 10px;
+  background: rgba(14, 165, 233, 0.12);
+  color: var(--cyan-accent);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  padding: 4px 12px;
   border-radius: 20px;
   font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .chat-messages {
@@ -246,20 +343,19 @@ body {
 
 .system-message {
   align-self: center;
-  background: rgba(56, 189, 248, 0.1);
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  color: var(--cyan-accent);
-  padding: 10px 16px;
-  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: 20px;
   font-size: 12px;
   text-align: center;
-  max-width: 80%;
 }
 
 .msg-row {
   display: flex;
   flex-direction: column;
-  max-width: 70%;
+  max-width: 75%;
 }
 
 .msg-row.user {
@@ -271,20 +367,22 @@ body {
 }
 
 .msg-bubble {
-  padding: 12px 16px;
-  border-radius: 16px;
-  font-size: 14px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-size: 13px;
   line-height: 1.5;
+  word-break: break-word;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .msg-row.user .msg-bubble {
-  background: var(--primary);
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
   color: white;
   border-bottom-right-radius: 4px;
 }
 
 .msg-row.assistant .msg-bubble {
-  background: var(--bg-card);
+  background: rgba(30, 41, 59, 0.85);
   border: 1px solid var(--border-color);
   color: var(--text-main);
   border-bottom-left-radius: 4px;
@@ -292,241 +390,212 @@ body {
 
 .msg-media {
   margin-top: 8px;
+  max-width: 260px;
   border-radius: 12px;
   overflow: hidden;
-  max-width: 250px;
   border: 1px solid var(--border-color);
 }
 
 .msg-media img {
   width: 100%;
   display: block;
+  cursor: pointer;
 }
 
 .chat-input-area {
   padding: 16px 24px;
   border-top: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.7);
   display: flex;
   gap: 12px;
-  background: rgba(15, 23, 42, 0.6);
 }
 
 .chat-input-area input {
   flex: 1;
-  background: var(--bg-card);
+  background: rgba(7, 10, 18, 0.8);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  padding: 12px 16px;
+  padding: 12px 18px;
   border-radius: 10px;
+  font-size: 13px;
   outline: none;
-  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
-.btn-primary {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+.chat-input-area input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--border-glow);
 }
 
-.btn-primary:hover {
-  background: var(--primary-hover);
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-main);
-  border: 1px solid var(--border-color);
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-/* SAĞ PANEL (INSPECTOR) */
+/* ------------------------------------------------------------- */
+/* SAĞ PANEL (KARAKTER İNCELEME & CANLI PROMPT DÜZENLEME) */
+/* ------------------------------------------------------------- */
 .inspector-panel {
-  background: rgba(15, 23, 42, 0.5);
-  padding: 20px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  padding: 22px 18px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
 }
 
 .panel-header {
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
 }
 
 .inspector-card {
-  background: var(--bg-card);
+  background: rgba(30, 41, 59, 0.4);
   border: 1px solid var(--border-color);
-  padding: 16px;
   border-radius: 12px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
+.inspector-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .inspector-field label {
   font-size: 11px;
+  font-weight: 600;
   color: var(--text-muted);
-  display: block;
-  margin-bottom: 4px;
 }
 
 .inspector-field input, .inspector-field textarea {
-  width: 100%;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(7, 10, 18, 0.6);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  padding: 8px;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
   font-size: 12px;
   outline: none;
 }
 
+.inspector-field textarea {
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.inspector-field input:focus, .inspector-field textarea:focus {
+  border-color: var(--primary);
+}
+
 .stats-card {
-  gap: 10px;
+  gap: 8px;
 }
 
 .stat-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 12px;
 }
 
 .green-text {
   color: var(--green-accent);
+  font-weight: 600;
 }
 
-/* BUTON SEÇİMLİ KURUMSAL MODAL KONTROLLERİ */
+/* ------------------------------------------------------------- */
+/* MODALLAR & KURUMSAL Beyaz Etiket (WHITE-LABEL) DIALOGLARI */
+/* ------------------------------------------------------------- */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(3, 7, 18, 0.75);
   backdrop-filter: blur(8px);
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
+  z-index: 1000;
 }
 
 .modal-overlay.open {
-  opacity: 1;
-  pointer-events: auto;
+  display: flex;
 }
 
-.corporate-modal {
-  width: 520px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-content {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  padding: 24px;
+.modal-content.corporate-modal {
+  background: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 16px;
+  width: 520px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  box-shadow: var(--card-shadow);
 }
 
 .modal-content h3 {
-  font-size: 18px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .form-group label {
   font-size: 12px;
-  color: var(--text-muted);
   font-weight: 600;
+  color: var(--text-muted);
 }
 
-.form-group input, .form-group select, .form-group textarea {
-  background: rgba(0, 0, 0, 0.3);
+.form-group input, .form-group textarea {
+  background: rgba(7, 10, 18, 0.7);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  padding: 10px;
+  padding: 10px 14px;
   border-radius: 8px;
+  font-size: 13px;
   outline: none;
 }
 
-/* PILL BUTTON GROUPS (GENDER, AGE) */
-.pill-group {
-  display: flex;
-  gap: 10px;
+.form-group input:focus, .form-group textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--border-glow);
 }
 
-.btn-pill {
-  flex: 1;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 13px;
-  transition: all 0.2s ease;
-}
-
-.btn-pill:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-main);
-}
-
-.btn-pill.active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary-hover);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-}
-
-/* TAG PILLS GROUP (TRAITS) */
-.tag-group {
+.pill-group, .tag-group {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.tag-pill {
-  padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.05);
+.btn-pill, .tag-pill {
+  background: rgba(30, 41, 59, 0.6);
   border: 1px solid var(--border-color);
   color: var(--text-muted);
+  padding: 6px 12px;
   border-radius: 20px;
   font-size: 12px;
   cursor: pointer;
-  user-select: none;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
-.tag-pill:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-main);
-}
-
-.tag-pill.active {
-  background: rgba(56, 189, 248, 0.2);
-  color: var(--cyan-accent);
-  border-color: rgba(56, 189, 248, 0.5);
+.btn-pill.active, .tag-pill.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: var(--primary);
+  color: #a5b4fc;
   font-weight: 600;
 }
 
@@ -542,6 +611,25 @@ body {
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* ÖZEL SCROLLBAR */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
 }
