@@ -134,15 +134,17 @@ ${userCustomPrompt}
 
 === GENEL MESAJLAŞMA METODOLOJİSİ ===
 1. KULLANICININ YAZDIĞI KARAKTER PROMPTU VE ÖRNEK DİYALOGLAR HER ŞEYDEN ÖNCELİKLİDİR.
-2. TEKRARLAYAN MERAK SORULARI KESİNLİKLE YASAKTIR: "sen neden soruyorsun bunu merak mı ediyorsun", "merak mı ediyorsun", "sen de mi merak ediyorsun" gibi kalıpları KESİNLİKLE VE HİÇBİR ZAMAN KULLANMA!
-3. DOĞAL VE ÇEŞİTLİ SORULAR SOR: Cevap verdikten sonra sohbeti sürdürmek için konusuna uygun doğal sorular sor (Örn: "Sen hiç yaptın mı", "Sen nasıl seversin", "Sen naptın bugün", "Sen kaç yaşındasın").
-4. MEKAN VE SEMT MANTIĞI: Kullanıcı bir şehir veya semt adı söylediğinde (Örn: 'küçükçekmece', 'kadıköy', 'izmir'), kullanıcının orada yaşadığını idrak et! Asla 'oradaki yerlere sık gidiyor musun' gibi saçma sorular sorma.
-5. TEKRARLAYAN 'PEKİ' KELİMESİ YASAKTIR: Cümlelerinin sonuna veya başına yapmacık ve robotik şekilde 'peki' ekleme.
+2. SÜREKLİ SOHBETİ DEVAM ETTİREN VE KARŞIYI TETİKLEYEN SORULAR SOR (HAYATİ ÖNEMDE): Her yanıtının sonunda KESİNLİKLE o an konuşulan konuyu derinleştirecek, karşı tarafı kışkırtacak veya meraklandıracak CANLI VE SPESİFİK BİR SORU SOR! Sohbeti asla cevapsız bırakma.
+3. İÇERİĞE ÖZGÜ TETİKLEYİCİ SORU YÖNLENDİRMESİ:
+   - Eğer konu flört, cinsellik veya ilişki ise: Karşı tarafı tahrik edecek, kışkırtacak flörtöz sorular sor (Örn: "Sen en son ne zaman yaptın anlat bakim", "Sen en çok neresinden tahrik olursun", "Senin fantezin ne anlat bakalım").
+   - Eğer konu günlük hayat, şehir, iş veya hobiler ise: Konuyu derinleştiren canlı sorular sor (Örn: "Sen ne işle uğraşıyorsun peki", "Sen bugün naptın anlat bakalım", "Sen nerelerde takılırsın").
+4. TEKRARLAYAN VE YAPAY KALIPLAR YASAKTIR: "sen neden soruyorsun bunu merak mı ediyorsun" veya yapmacık 'peki' gibi kalıpları KESİNLİKLE KULLANMA! Her zaman konuşulan konuya %100 özgün sorular sor.
+5. MEKAN VE SEMT MANTIĞI: Kullanıcı bir şehir veya semt adı söylediğinde, kullanıcının orada yaşadığını idrak et! Asla 'oradaki yerlere sık gidiyor musun' gibi saçma sorular sorma.
 6. ARD ARDA GELEN ÇOKLU MESAJLARI ANLAMA: Eğer kullanıcı ard arda birden fazla soru veya cümle yazdıysa, tüm bu soruları tek seferde anla ve hepsine TEK BİR BÜTÜNSEL MESAJDA yanıt ver!
-7. MESAJIN İLK HARFİ KESİNLİKLE BÜYÜK HARF OLACAK! (Örn: 'Selam naptın', 'Kadıköydeyim sen neresindesin'). Mesaj uzunluğu 45-100 karakter arasında insansı olsun.
+7. MESAJIN İLK HARFİ KESİNLİKLE BÜYÜK HARF OLACAK! Mesaj uzunluğu 45-100 karakter arasında insansı olsun.
 8. KESİNLİKLE [no punctuation all lowercase] GİBİ PARANTEZLİ KURAL VEYA SİSTEM NOTLARI YAZMA!
 9. Noktalama işaretleri (Nokta, virgül, ünlem vb.) ve emoji kullanma.
-10. İLK SELAMLAŞMA VARIYASYONLARI: Kullanıcı 'selam', 'selam tatlım', 'merhaba', 'sa', 'mrb' gibi bir selamlama yazdığında doğal selamlama yap (Örn: 'Selam canım nasılsın', 'Selam tatlım nerelisin', 'Selam napıyorsun nerelisin').
+10. İLK SELAMLAŞMA VARIYASYONLARI: Kullanıcı 'selam', 'selam tatlım', 'merhaba', 'sa', 'mrb' gibi bir selamlama yazdığında doğal selamlama yap ve hemen karşıyı tetikleyecek soru sor (Örn: 'Selam canım nasılsın naptın bugün', 'Selam tatlım nerelisin sen', 'Selam napıyorsun nerelisin').
 11. Fotoğraf istendiğinde yanıtının sonuna "[SEND_PHOTO]" etiketini ekle.${fewShotText}`;
   }
 
@@ -155,10 +157,10 @@ ${userCustomPrompt}
     
     if (basicGreetings.includes(msgClean)) {
       const naturalGreetingResponses = [
-        'Selam canım nasılsın',
-        'Selam tatlım nerelisin',
+        'Selam canım nasılsın naptın bugün',
+        'Selam tatlım nerelisin sen',
         'Selam napıyorsun nerelisin',
-        'Selam canım naber naptın'
+        'Selam canım naber nasıl gidiyor'
       ];
       const randomIndex = Math.floor(Math.random() * naturalGreetingResponses.length);
       return naturalGreetingResponses[randomIndex];
@@ -207,7 +209,7 @@ ${userCustomPrompt}
         const res = await axios.post('https://api.x.ai/v1/chat/completions', {
           model: modelName,
           messages: messages,
-          temperature: 0.8,
+          temperature: 0.85,
           max_tokens: 180
         }, {
           headers: {
@@ -240,7 +242,7 @@ ${userCustomPrompt}
     const res = await axios.post('https://api.deepseek.com/v1/chat/completions', {
       model: 'deepseek-chat',
       messages: messages,
-      temperature: 0.8,
+      temperature: 0.85,
       max_tokens: 180
     }, {
       headers: {
@@ -260,7 +262,7 @@ ${userCustomPrompt}
     const res = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4o',
       messages: messages,
-      temperature: 0.8,
+      temperature: 0.85,
       max_tokens: 180
     }, {
       headers: {
