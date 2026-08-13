@@ -1,6 +1,6 @@
 /**
- * Eren AI Masaüstü Uygulaması — Token Tasarruflu Saf JS Hafıza Motoru
- * 30 Günlük Geçmişi Yerel JSON Dosyasında Saklayan Önbellek Mimarisi (C++ Derlemesi Gerektirmez)
+ * Eren AI Masaüstü Uygulaması — Akıllı Uzun Süreli Hafıza Motoru
+ * 20 Mesajlık Canlı Bağlam Pencereli & Kullanıcı Nitelik Özeti Saklayan Önbellek Mimarisi
  */
 
 const path = require('path');
@@ -26,6 +26,8 @@ class MemoryStore {
       try {
         const raw = fs.readFileSync(this.dbPath, 'utf8');
         this.data = JSON.parse(raw);
+        if (!this.data.messages) this.data.messages = [];
+        if (!this.data.userSummaries) this.data.userSummaries = {};
       } catch (err) {
         this.save();
       }
@@ -35,11 +37,15 @@ class MemoryStore {
   }
 
   save() {
-    fs.writeFileSync(this.dbPath, JSON.stringify(this.data, null, 2), 'utf8');
+    try {
+      fs.writeFileSync(this.dbPath, JSON.stringify(this.data, null, 2), 'utf8');
+    } catch (e) {
+      console.error('Hafıza kaydetme hatası:', e.message);
+    }
   }
 
   /**
-   * Yeni Mesaj Kaydet
+   * Yeni Mesaj Kaydet ve Otomatik Kullanıcı Niteliklerini Çıkar
    */
   addMessage(personaId, userId, sender, content, mediaPath = null) {
     const newMsg = {
@@ -53,7 +59,51 @@ class MemoryStore {
     };
 
     this.data.messages.push(newMsg);
+
+    if (sender === 'user') {
+      this.extractUserFacts(personaId, userId, content);
+    }
+
     this.save();
+  }
+
+  /**
+   * Kullanıcı Cümlelerinden Boy, Yaş, Şehir, İş vb. Bilgileri Otomatik Çıkar ve Hafızaya İşle
+   */
+  extractUserFacts(personaId, userId, message) {
+    if (!message) return;
+    const msgLower = message.toLowerCase().trim();
+
+    const key = `${personaId}_${userId}`;
+    let currentFacts = this.data.userSummaries[key] || '';
+    const factList = currentFacts ? currentFacts.split(', ') : [];
+
+    // 1. Boy tespiti (Örn: 175, 1.75, 175 cm, boyum 180)
+    const heightMatch = msgLower.match(/(1[5-9]\d|200)\s*(cm|m|boy|boyum)?/);
+    if (heightMatch && (msgLower.includes('boy') || msgLower.includes('cm') || heightMatch[1].length === 3)) {
+      const heightVal = heightMatch[1];
+      if (!currentFacts.includes('Boy:')) {
+        factList.push(`Boy: ${heightVal} cm`);
+      }
+    }
+
+    // 2. Yaş tespiti (Örn: 25 yaşındayım, yaş 28)
+    const ageMatch = msgLower.match(/(\d{2})\s*(yaş|yaşında|yaşındayım)/);
+    if (ageMatch && !currentFacts.includes('Yaş:')) {
+      factList.push(`Yaş: ${ageMatch[1]}`);
+    }
+
+    // 3. Şehir/Semt tespiti
+    const cities = ['istanbul', 'ankara', 'izmir', 'bursa', 'antalya', 'adana', 'konya', 'gaziantep', 'kocaeli', 'mersin', 'diyarbakır', 'hatay', 'manisa', 'kayseri', 'samsun', 'balıkesir', 'eskişehir', 'trabzon', 'muğla', 'denizli', 'aydın', 'sakarya'];
+    cities.forEach(c => {
+      if (msgLower.includes(c) && !currentFacts.includes('Kullanıcı Şehri:')) {
+        factList.push(`Kullanıcı Şehri: ${c.charAt(0).toUpperCase() + c.slice(1)}`);
+      }
+    });
+
+    if (factList.length > 0) {
+      this.data.userSummaries[key] = factList.join(', ');
+    }
   }
 
   /**
@@ -71,29 +121,24 @@ class MemoryStore {
   }
 
   /**
-   * Token Tasarruflu LLM Bağlamı Getir (Son 6 Mesaj + Özet Hafıza)
+   * Yüksek Hafızalı LLM Bağlamı Getir (Son 20 Mesaj + Kullanıcı Nitelik Özeti)
    */
   getOptimizedContext(personaId, userId) {
-    // 1. İlgili kullanıcının son 6 mesajını getir
+    // Son 20 mesajı getir (Hafıza 6'dan 20'ye çıkarıldı)
     const userMsgs = this.data.messages
       .filter(m => m.personaId === personaId && m.userId === userId)
-      .slice(-6);
+      .slice(-20);
 
-    // 2. Varsa önceden çıkarılmış özet hafızayı getir
     const key = `${personaId}_${userId}`;
     const summaryFacts = this.data.userSummaries[key];
 
     const history = [];
 
-    // Özet hafıza varsa LLM'e not olarak ekle
+    // Özet hafıza varsa LLM'e bilgi notu olarak ekle
     if (summaryFacts) {
       history.push({
-        role: 'user',
-        content: `(Geçmiş Bilgi Notu: Müşteri hakkında bildiklerin: ${summaryFacts})`
-      });
-      history.push({
-        role: 'assistant',
-        content: 'tamamdir hatirladim akilda tutuyorum'
+        role: 'system',
+        content: `KULLANICI HAKKINDA ÖNCEDEN BİLDİĞİN KİŞİSEL BİLGİLER (BUNLARI ASLA UNUTMA VE TEKRAR SORMA): ${summaryFacts}`
       });
     }
 
@@ -107,18 +152,12 @@ class MemoryStore {
     return history;
   }
 
-  /**
-   * Kullanıcı Nitelik Özetini Güncelle (Token Tasarrufu İçin)
-   */
   updateUserSummary(personaId, userId, facts) {
     const key = `${personaId}_${userId}`;
     this.data.userSummaries[key] = facts;
     this.save();
   }
 
-  /**
-   * 30 Günden Eski Mesajları Otomatik Temizle (Veritabanı Şişmesini Önle)
-   */
   cleanupOldMessages() {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const initialCount = this.data.messages.length;
