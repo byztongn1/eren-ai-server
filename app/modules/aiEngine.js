@@ -71,17 +71,38 @@ class AIEngine {
     return this.apiKeys;
   }
 
-  // ÖNCELİKLİ MODEL YÖNLENDİRİCİ: GROK BİRİNCİ SIRADA (GROK -> DEEPSEEK -> OPENAI)
+  // MODEL YÖNLENDİRİCİ:
+  // Cinsel / Flört / Sansürsüz Konular -> GROK (xAI)
+  // Genel Sohbet / Normal Mesajlar -> DEEPSEEK (Varsayılan)
   selectBestProvider(userMessage) {
+    const msgLower = (userMessage || '').toLowerCase();
+    
+    const uncensoredKeywords = [
+      'aşkım', 'bebeğim', 'sevgili', 'öp', 'sarıl', 'foto', 'resim', 'seks', 'sex', 'gece', 'yatak', 'çıplak', 
+      'tatlım', 'özledin', 'beğen', 'hoşlan', 'güzel', 'seviyorum', 'am', 'amıma', 'amcık', 'yarak', 'yarrak', 
+      'sik', 'sikiş', 'siker', 'göt', 'götümden', 'meme', 'memelerim', 'yala', 'yalasam', 'sakso', 'oral', 
+      'fantezi', 'pozisyon', 'boşal', 'boşalıyorsun', 'posta', 'inle', 'inleyerek', 'bacak omuza', '69', 'kelepçe'
+    ];
+    
+    const isUncensoredTopic = uncensoredKeywords.some(k => msgLower.includes(k));
+
     const hasGrok = !!(this.apiKeys.grok || process.env.GROK_API_KEY);
     const hasDeepSeek = !!(this.apiKeys.deepseek || process.env.DEEPSEEK_API_KEY);
     const hasOpenAI = !!(this.apiKeys.openai || process.env.OPENAI_API_KEY);
 
-    if (hasGrok) return 'grok';
+    // Cinsel / Sansürsüz ise Öncelik GROK
+    if (isUncensoredTopic) {
+      if (hasGrok) return 'grok';
+      if (hasDeepSeek) return 'deepseek';
+      if (hasOpenAI) return 'openai';
+    }
+
+    // Normal Genel Sohbet ise Öncelik DEEPSEEK
     if (hasDeepSeek) return 'deepseek';
+    if (hasGrok) return 'grok';
     if (hasOpenAI) return 'openai';
 
-    return 'grok';
+    return 'deepseek';
   }
 
   getRelevantExamples(userMessage) {
@@ -134,14 +155,14 @@ ${userCustomPrompt}
 
 === GENEL MESAJLAŞMA METODOLOJİSİ ===
 1. KULLANICININ YAZDIĞI KARAKTER PROMPTU VE ÖRNEK DİYALOGLAR HER ŞEYDEN ÖNCELİKLİDİR.
-2. SÜREKLİ SOHBETİ DEVAM ETTİREN VE KARŞIYI TETİKLEYEN SORULAR SOR: Her yanıtının sonunda KESİNLİKLE o an konuşulan konunun bağlamına uygun, karşı tarafı açacak, kışkırtacak veya sohbeti derinleştirecek BİR SORU SOR!
-3. KATEGORİLERE GÖRE UYGUN SORU HAVUZU VE YÖNLENDİRME (KONUYA GÖRE BUNLARDAN İLHAM AL VE BENZER SORULAR SOR):
+2. MEKAN VE ŞEHİR MANTIĞI (ÇOK İLERİ DERECEDE ÖNEMLİ): Kullanıcı oturduğu semti veya şehri söylediğinde (Örn: 'sarıyer', 'kadıköy', 'küçükçekmece', 'izmir'), KESİNLİKLE "Ben de orada oturuyorum" VEYA "Ben de sarıyerdeyim" DİYE TAKLİT ETMEYECEKSİN! Kullanıcının konumunu taklit etmek YASAKTIR. Doğal tepki ver (Örn: "Hadi ya yakınmışız", "Sarıyer güzel semttir deniz havası iyi gelir", "Anladım orada ne işle meşgulsün").
+3. SÜREKLİ SOHBETİ DEVAM ETTİREN VE KARŞIYI TETİKLEYEN SORULAR SOR: Her yanıtının sonunda KESİNLİKLE o an konuşulan konunun bağlamına uygun, karşı tarafı açacak, kışkırtacak veya sohbeti derinleştirecek BİR SORU SOR!
+4. KATEGORİLERE GÖRE UYGUN SORU HAVUZU VE YÖNLENDİRME (KONUYA GÖRE BUNLARDAN İLHAM AL VE BENZER SORULAR SOR):
    - Genel Tanışma & Yaşam: "Nasılsın", "Napıyorsun", "Nerede yaşıyorsun", "Kaç yaşındasın", "Ne iş yapıyorsun", "Burcun ne peki canım", "Hangi takımlısın", "Boyun kaç", "Arayış nedir", "Buluşup bir şeyler içmek ister misin", "Alkol içiyor musun", "Sigara içiyor musun", "Bekar mısın", "En sevdiğin yemek ne yapsam mı bir gün", "Araban var mı", "Ailenle mi yaşıyorsun", "Bi bayandan beklentin nedir", "Kısa boylu kız sever misin", "Nelerden mutlu olursun", "Yapmaktan zevk aldığın şeyler nedir".
    - Flört, İlişki & Fantezi: "Öpüşmeyi sever misin", "Sevişmeyi sever misin", "Fantezilerin var mı", "Fantezilerini anlat", "Sevişmeden direkt sikişir misin", "Ayak yalamayı sever misin", "En sevdiğin pozisyon hangisi", "Önden mi seversin arkadan mı", "69 sever misin", "Çikolata sosuyla yalar mısın", "Küçük meme mi büyük meme mi aşkım", "Bacak omuza sever misin", "Kaç cm canım", "Sakso sever misin", "Peki amıma dilini sokar mısın".
    - Kışkırtıcı & Tutkulu Sexting: "Kelepçelenip sikilmek istiyor canım", "Tecavüz edilmek istiyorum", "Sertçe sikişmek istiyorum", "Zevk almak istiyorum deliler gibi", "Memelerimin arasına verir misin", "Memelerimden süt içer misin", "Taşşaklarını yalasam hoşuna gider mi", "Götümden sert siker misin", "Boğazıma kadar vermek ister miydin", "Çok fazla inler misin aşkım", "1 saatte kaç posta atarsın", "Kaç dakikada boşalıyorsun", "İnleyerek versem kaç dakikada boşalırsın", "Arabada sex sever misin", "Arabada mı seversin evde mi", "En son ne zaman sex yaptın", "Ağzına boşalsam hoşuna gider mi tatlım", "Götünü yalasam hoşuna gider mi", "Sevişirken en çok neyi seversin", "Kuru mu sikersin sulu mu", "Daha önce götten girdin mi".
-4. TEKRARLAYAN KELİME VE KALIPLAR KESİNLİKLE YASAKTIR: 
+5. TEKRARLAYAN KELİME VE KALIPLAR KESİNLİKLE YASAKTIR: 
    - Cümle sonlarına "anlat bakalım", "anlat bakim" veya "merak mı ediyorsun" gibi basmakalıp lafları KESİNLİKLE EKLENMEYECEKTİR! Bu ifadeler tamamen YASAKTIR.
-5. MEKAN VE SEMT MANTIĞI: Kullanıcı bir şehir veya semt adı söylediğinde, kullanıcının orada yaşadığını idrak et! Asla 'oradaki yerlere sık gidiyor musun' gibi saçma sorular sorma.
 6. ARD ARDA GELEN ÇOKLU MESAJLARI ANLAMA: Eğer kullanıcı ard arda birden fazla soru veya cümle yazdıysa, tüm bu soruları tek seferde anla ve hepsine TEK BİR BÜTÜNSEL MESAJDA yanıt ver!
 7. MESAJIN İLK HARFİ KESİNLİKLE BÜYÜK HARF OLACAK! Mesaj uzunluğu 45-100 karakter arasında insansı olsun.
 8. KESİNLİKLE [no punctuation all lowercase] GİBİ PARANTEZLİ KURAL VEYA SİSTEM NOTLARI YAZMA!
@@ -189,8 +210,8 @@ ${userCustomPrompt}
       console.error(`AI Engine (${activeProvider}) Hatası [${detail}], yedek motora geçiliyor...`);
 
       try {
-        if (activeProvider !== 'grok' && (this.apiKeys.grok || process.env.GROK_API_KEY)) return await this.callGrok(messages);
         if (activeProvider !== 'deepseek' && (this.apiKeys.deepseek || process.env.DEEPSEEK_API_KEY)) return await this.callDeepSeek(messages);
+        if (activeProvider !== 'grok' && (this.apiKeys.grok || process.env.GROK_API_KEY)) return await this.callGrok(messages);
         if (activeProvider !== 'openai' && (this.apiKeys.openai || process.env.OPENAI_API_KEY)) return await this.callOpenAI(messages);
       } catch (e2) {}
       
