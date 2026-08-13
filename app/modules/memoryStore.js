@@ -224,12 +224,15 @@ class MemoryStore {
   }
 
   /**
-   * 30 Günlük Uzun Süreli LLM Bağlamı Getir (Son 30 Mesaj + Soyo Kullanıcı Profil Özeti)
+   * TAM 30 GÜNLÜK KESİNTİSİZ SOHBET HAFIZASI VE PROFİL ÖZETİ
    */
   getOptimizedContext(personaId, userId) {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    
+    // Son 30 takvim günündeki tüm mesaj geçmişini getir (Son 150 mesaja kadar tam 30 günlük hafıza)
     const userMsgs = this.data.messages
-      .filter(m => (m.personaId === personaId || m.personaId === 'default_persona') && m.userId === userId)
-      .slice(-30);
+      .filter(m => (m.personaId === personaId || m.personaId === 'default_persona') && m.userId === userId && m.createdAt >= thirtyDaysAgo)
+      .slice(-150);
 
     const key = `${personaId}_${userId}`;
     const defaultKey = `default_persona_${userId}`;
@@ -255,7 +258,7 @@ class MemoryStore {
   }
 
   /**
-   * CANLI DÖNÜŞÜM & ANALİTİK İSTATİSTİKLERİNİ HESAPLA (MADDE 5)
+   * CANLI DÖNÜŞÜM & ANALİTİK İSTATİSTİKLERİNİ HESAPLA
    */
   getAnalyticsStats() {
     const userIds = new Set(this.data.messages.map(m => m.userId).filter(Boolean));
